@@ -1,8 +1,7 @@
 package com.biblioteko.biblioteko.user;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +16,8 @@ public class UserController {
     private UserService userService;
 
    @PostMapping
-   public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-      User user = userService.createUser(userDTO);
-      return ResponseEntity.created(URI.create("/users" + user.getId())).body(userDTO);
+   public ResponseEntity<?> createUser(@RequestBody NewUserDTO newUserDTO) {
+      UserDTO userDTO = userService.createUser(newUserDTO);
+      return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
    }
 }

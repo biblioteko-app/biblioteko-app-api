@@ -1,21 +1,17 @@
 package com.biblioteko.biblioteko.user;
 
-import java.util.UUID;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UserDTO {
+public class NewUserDTO {
     private String name;
     private String role;
-    private UUID id;
 
-    public UserDTO(String name, String role, UUID id) {
+    public NewUserDTO(String name, String role) {
         this.name = name;
         this.role = role;
-        this.id = id;
     }
     
 }
