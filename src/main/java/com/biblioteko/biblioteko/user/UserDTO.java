@@ -1,5 +1,7 @@
 package com.biblioteko.biblioteko.user;
 
+import java.util.UUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,10 +10,12 @@ import lombok.Setter;
 public class UserDTO {
     private String name;
     private String role;
+    private UUID id;
 
-    public UserDTO(String name, String role) {
+    public UserDTO(String name, String role, UUID id) {
         this.name = name;
         this.role = role;
+        this.id = id;
     }
     
 }

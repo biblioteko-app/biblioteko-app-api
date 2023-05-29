@@ -14,15 +14,15 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createUser(NewUserDTO newUserDTO) {
+    public UserDTO createUser(NewUserDTO newUserDTO) {
         User user = new User();
         user.setName(newUserDTO.getName());
         user.setRole(newUserDTO.getRole());
-        return userRepository.save(user);
+        return convertToUserDTO(userRepository.save(user));
     }
 
     public UserDTO convertToUserDTO (User user){
-        return new UserDTO(user.getName(), user.getRole());
+        return new UserDTO(user.getName(), user.getRole(), user.getId());
 
     }
 
