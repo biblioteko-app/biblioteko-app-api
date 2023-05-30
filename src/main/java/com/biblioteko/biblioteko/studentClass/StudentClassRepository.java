@@ -9,5 +9,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StudentClassRepository extends JpaRepository<StudentClass, UUID>{
     public Optional<StudentClass> findById(UUID classId);
-    public void delete(StudentClass studentClass);    
 }

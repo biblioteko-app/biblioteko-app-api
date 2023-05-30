@@ -33,7 +33,7 @@ public class StudentClassController {
             StudentClassDTO studentClassDTO = studentClassService.createStudentClass(newStudentClassDTO, userId);
             return new ResponseEntity<>(studentClassDTO.getId(), HttpStatus.CREATED);
         }catch(UserNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
         catch(IllegalArgumentException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
