@@ -26,11 +26,11 @@ public class UserController {
     private UserService userService;
 
    @PostMapping
-   public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
+   public ResponseEntity<?> createUser(@RequestBody NewUserDTO newUserDTO) {
 	  
 	  try {
-		  User user = userService.createUser(userDTO);
-	      return ResponseEntity.created(URI.create("/users" + user.getId())).body(userDTO);
+		  UserDTO userDTO = userService.createUser(newUserDTO);
+	      return ResponseEntity.created(URI.create("/users" + userDTO.getId())).body(userDTO);
 	  }catch(IllegalArgumentException e) {
 		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	  }catch(EmailAlreadyExistsException e) {
@@ -41,12 +41,12 @@ public class UserController {
 	  
    }
    
-   @GetMapping("/{user_id}/")
+   @GetMapping("/{user_id}")
    public ResponseEntity<?> getUserDetails(@PathVariable("user_id") UUID userId){
-	   
 	   try {
 		   UserDTO userDTO = userService.getUserDetails(userId);
-		   return new ResponseEntity<UserDTO>(userDTO, HttpStatus.BAD_REQUEST);
+
+		   return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);
 	   }catch(UserNotFoundException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	   }catch(Exception e) {
@@ -55,10 +55,10 @@ public class UserController {
 	   
    }
    
-   @PutMapping("/{user_id}/")
-   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody UserDTO userDTO){
+   @PutMapping("/{user_id}")
+   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody NewUserDTO newUserDTO){
 	   try {
-		   userService.editUserDetails(userId, userDTO);
+		   userService.editUserDetails(userId, newUserDTO);
 		   return new ResponseEntity<>("Usuario atualizado com sucesso!", HttpStatus.OK);
 	   }catch(IllegalArgumentException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -71,7 +71,7 @@ public class UserController {
 	   }
    }
    
-   @DeleteMapping("/{user_id}/")
+   @DeleteMapping("/{user_id}")
    public ResponseEntity<?> deleteUser(@PathVariable("user_id") UUID userId){
 	   
 	   try {

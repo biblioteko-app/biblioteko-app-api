@@ -1,5 +1,6 @@
 package com.biblioteko.biblioteko.user;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,17 +9,18 @@ import org.springframework.stereotype.Service;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 
+
 @Service
 public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User createUser(UserDTO userDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
+    public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
     	
-    	String name = userDTO.getName();
-    	String email = userDTO.getEmail();
-    	String password = userDTO.getPassword();
-    	String role = userDTO.getRole();
+    	String name = newUserDTO.getName();
+    	String email = newUserDTO.getEmail();
+    	String password = newUserDTO.getPassword();
+    	String role = newUserDTO.getRole();
     	
         if(name.isBlank() || name.isEmpty()) throw new IllegalArgumentException("Nome nao pode ser vazio!");
         if(email.isBlank() || email.isEmpty()) throw new IllegalArgumentException("Email nao pode ser vazio!");
@@ -29,38 +31,33 @@ public class UserService {
         
         User user = new User(name, email, password, role);
         
-        return userRepository.save(user);
+        return convertToUserDTO(userRepository.save(user));
         
     }
     
     public UserDTO getUserDetails(UUID userId) throws UserNotFoundException {
+        User user = findUserById(userId);
     	
-    	if(!userRepository.existsById(userId)) throw new UserNotFoundException("Usuario nao encontrado.");
-    	
-    	User user = userRepository.findById(userId).get();
-    	
-    	return new UserDTO(user.getName(), user.getEmail(), "", user.getRole());
+    	return convertToUserDTO(user);
     	
     }
     
-    public void editUserDetails(UUID userId, UserDTO userDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
+    public void editUserDetails(UUID userId, NewUserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
+    	User user = findUserById(userId);
     	
-    	if(!userRepository.existsById(userId)) throw new UserNotFoundException("Usuario nao encontrado.");
-    	
-    	String name = userDTO.getName();
-    	String email = userDTO.getEmail();
-    	String password = userDTO.getPassword();
-    	String role = userDTO.getRole();
+    	String name = newUserDTO.getName();
+    	String email = newUserDTO.getEmail();
+    	String password = newUserDTO.getPassword();
+    	String role = newUserDTO.getRole();
     	
     	if(name.isBlank() || name.isEmpty()) throw new IllegalArgumentException("Nome nao pode ser vazio!");
         if(email.isBlank() || email.isEmpty()) throw new IllegalArgumentException("Email nao pode ser vazio!");
         if(password.isBlank() || password.isEmpty()) throw new IllegalArgumentException("Senha nao pode ser vazia!");
         
-        User user = userRepository.findById(userId).get();
-        
         if(!user.getRole().equals(role)) throw new IllegalArgumentException("Voce nao pode alterar o tipo de usuario.");
-        if(userRepository.existsByEmail(email)) throw new EmailAlreadyExistsException("Este email nao esta disponivel.");
         
+        if(!user.getEmail().equals(email)) throw new EmailAlreadyExistsException("Email já existe!");
+
         user.setName(name);
         user.setEmail(email);
         user.setPassword(password);
@@ -70,13 +67,22 @@ public class UserService {
     }
     
     public void deleteUser(UUID userId) throws UserNotFoundException {
-    	
-    	if(!userRepository.existsById(userId)) throw new UserNotFoundException("Usuario nao encontrado.");
-    	
-    	User user = userRepository.findById(userId).get();
-    	
+    	User user = findUserById(userId);
+    
     	userRepository.delete(user);
-    	
     }
+
+    public UserDTO convertToUserDTO (User user){
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole());
+
+    }
+
+    public User findUserById(UUID userId) throws UserNotFoundException {
+        Optional<User> user = this.userRepository.findById(userId);
+        if(!user.isPresent()) throw new UserNotFoundException("Usuario nao encontrado.");
+
+        return user.get();
+    }
+
 }
 
