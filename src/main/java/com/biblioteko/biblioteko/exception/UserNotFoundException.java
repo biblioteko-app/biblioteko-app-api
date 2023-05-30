@@ -1,9 +1,9 @@
 package com.biblioteko.biblioteko.exception;
 
-public class UserNotFoundException extends Exception{
-    public UserNotFoundException(String msg){
-        super(msg);
-    }
-    
-    
+public class UserNotFoundException extends Exception {
+
+	public UserNotFoundException(String msg) {
+		super(msg);
+	}
+
 }

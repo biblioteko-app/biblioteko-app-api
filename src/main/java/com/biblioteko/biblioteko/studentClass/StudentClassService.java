@@ -56,7 +56,7 @@ public class StudentClassService {
                                     studentClass.getClassYear(), 
                                     studentClass.getSchoolSubject(), 
                                     studentClass.getPhoto(),
-                                    null,
+                                    studentClass.getOwner(),
                                     null);
 
         }else{
@@ -75,12 +75,9 @@ public class StudentClassService {
     }
 
     public List<UserDTO> getStudentsOfClass(UUID classId) throws StudentClassNotFoundException {
-        Optional<StudentClass> studentClass = studentClassRepository.findById(classId);
-        if (studentClass == null) {
-            throw new StudentClassNotFoundException("Turma não encontrada.");
-        }
+        StudentClass studentClass = findStudentClassById(classId);
         
-        List<UserDTO> studentsOfClass = studentClass.get().getStudents()
+        List<UserDTO> studentsOfClass = studentClass.getStudents()
                                                     .stream()
                                                     .map(u -> userService.convertToUserDTO(u))
                                                     .collect(Collectors.toList());
@@ -90,48 +87,47 @@ public class StudentClassService {
     public void removeStudentClass(UUID classId, UUID userId) throws StudentClassNotFoundException, UserUnauthorized, UserNotFoundException{
         User user = userService.findUserById(userId);
 
-        Optional<StudentClass> studentClass = studentClassRepository.findById(classId);
-        if (studentClass == null) {
-            throw new StudentClassNotFoundException("Turma não encontrada.");
-        }
+        StudentClass studentClass = findStudentClassById(classId);
 
-        if(!studentClass.get().getOwner().getId().equals(user.getId())){
+        if(!studentClass.getOwner().getId().equals(user.getId())){
             throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
         }
         
-        studentClassRepository.delete(studentClass.get());
+        studentClassRepository.delete(studentClass);
     }
 
     public StudentClassDTO getStudentClassDetails(UUID classId) throws StudentClassNotFoundException {
-        Optional<StudentClass> studentClass = studentClassRepository.findById(classId);
-        if (studentClass == null) {
-            throw new StudentClassNotFoundException("Turma não encontrada.");
-        }
+        StudentClass studentClass = findStudentClassById(classId);
 
-        return convertToStudentClassDTO(studentClass.get());
+        return convertToStudentClassDTO(studentClass);
     }
 
     public void editStudentClass(UUID classId, UUID userId, StudentClassDTO studentClassDTO) throws StudentClassNotFoundException, UserNotFoundException, UserUnauthorized{
         User user = userService.findUserById(userId);
         
-        Optional<StudentClass> studentClass = studentClassRepository.findById(classId);
-        if (studentClass == null) {
-            throw new StudentClassNotFoundException("Turma não encontrada.");
-        }
-
-        if(!studentClass.get().getOwner().getId().equals(user.getId())){
+        StudentClass studentClass = findStudentClassById(classId);
+      
+        if(!studentClass.getOwner().getId().equals(user.getId())){
             throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
         }
 
-        studentClass.get().setName(studentClassDTO.getName());
-        studentClass.get().setClassYear(studentClassDTO.getClassYear());
-        studentClass.get().setSchoolSubject(studentClassDTO.getSchoolSubject());
-        studentClass.get().setPhoto(studentClassDTO.getPhoto());
+        studentClass.setName(studentClassDTO.getName());
+        studentClass.setClassYear(studentClassDTO.getClassYear());
+        studentClass.setSchoolSubject(studentClassDTO.getSchoolSubject());
+        studentClass.setPhoto(studentClassDTO.getPhoto());
 
         Set<UUID> studentsToRemove = studentClassDTO.getStudents();
-        studentClass.get().removeStudents(studentsToRemove);
+        studentClass.removeStudents(studentsToRemove);
 
-        studentClassRepository.save(studentClass.get());
+        studentClassRepository.save(studentClass);
     }
     
+
+    public StudentClass findStudentClassById(UUID studentClassId) throws StudentClassNotFoundException {
+        Optional<StudentClass> studentClass = this.studentClassRepository.findById(studentClassId);
+        if(!studentClass.isPresent()) throw new StudentClassNotFoundException("Turma não encontrada.");
+
+        return studentClass.get();
+    }
+
 }

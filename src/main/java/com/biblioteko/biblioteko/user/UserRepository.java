@@ -1,5 +1,6 @@
 package com.biblioteko.biblioteko.user;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,7 +9,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    public Optional<User> findById(UUID classId);
+	
+    Optional<User> findById(UUID id);
+    
+    List<User> findByEmail(String email);
+    
+    boolean existsByEmail(String email);
+    
+    boolean existsById(UUID id);
+    
+    boolean existsByName(String name);
+  
     User findByName(String name);
 }
 
