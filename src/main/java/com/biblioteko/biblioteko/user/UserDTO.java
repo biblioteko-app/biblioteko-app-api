@@ -1,8 +1,7 @@
 package com.biblioteko.biblioteko.user;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Set;
 import java.util.UUID;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,13 +20,14 @@ public class UserDTO {
 
     private UUID id;
 
-    public UserDTO(UUID id, String name, String email, String password, String role) {
+    private Set<UUID> redingList;
+
+    public UserDTO(UUID id, String name, String email, String password, String role, Set<UUID> redingList) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
         this.id = id;
+        this.redingList = redingList;
     }
-
-    
 }

@@ -1,17 +1,17 @@
 package com.biblioteko.biblioteko.user;
-
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-
+import com.biblioteko.biblioteko.read.Read;
 
 @Service
 public class UserService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -29,17 +29,15 @@ public class UserService {
         if(!role.equals("ALUNO") && !role.equals("PROFESSOR")) throw new IllegalArgumentException("Voce deve ser ou professor ou aluno.");
         if(userRepository.existsByEmail(email)) throw new EmailAlreadyExistsException("Este email nao esta disponivel.");
         
+    
         User user = new User(name, email, password, role);
         
         return convertToUserDTO(userRepository.save(user));
-        
     }
     
     public UserDTO getUserDetails(UUID userId) throws UserNotFoundException {
         User user = findUserById(userId);
-    	
     	return convertToUserDTO(user);
-    	
     }
     
     public void editUserDetails(UUID userId, NewUserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
@@ -62,8 +60,7 @@ public class UserService {
         user.setEmail(email);
         user.setPassword(password);
         
-        userRepository.save(user);
-    	
+        userRepository.save(user);	
     }
     
     public void deleteUser(UUID userId) throws UserNotFoundException {
@@ -73,15 +70,27 @@ public class UserService {
     }
 
     public UserDTO convertToUserDTO (User user){
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole());
+        if(user.getRedingList() == null){
+            return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), null);
+        }
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), getUserReadingBooks(user)); 
+    }
+
+    public Set<UUID> getUserReadingBooks(User user){
+       return user.getRedingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
 
     }
 
     public User findUserById(UUID userId) throws UserNotFoundException {
-        Optional<User> user = this.userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
         if(!user.isPresent()) throw new UserNotFoundException("Usuario nao encontrado.");
 
         return user.get();
+    }
+
+    public void addRead(Read read, User user) {
+        user.addRead(read);
+        userRepository.save(user);
     }
 
 }

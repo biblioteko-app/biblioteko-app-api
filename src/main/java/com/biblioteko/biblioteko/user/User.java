@@ -1,12 +1,13 @@
 package com.biblioteko.biblioteko.user;
-
+import java.util.Set;
 import java.util.UUID;
-
+import com.biblioteko.biblioteko.read.Read;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,6 +38,9 @@ public class User {
     
     @Column(nullable = false)
     private String role;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Read> redingList;
     
     public User(String name, String email, String password, String role) {
     	this.name = name;
@@ -45,8 +49,10 @@ public class User {
     	this.role = role;
     }
 
-
-
-
+    public void addRead(Read read){
+        if(!redingList.contains(read)){
+            redingList.add(read);
+        }
+    }
 }
 

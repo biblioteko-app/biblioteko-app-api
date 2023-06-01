@@ -1,6 +1,5 @@
 package com.biblioteko.biblioteko.user;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,8 +15,5 @@ public class NewUserDTO {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     
-    private String role;
-
-
-    
+    private String role;  
 }
