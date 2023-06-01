@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
@@ -22,6 +23,9 @@ public class UserService {
     
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    PasswordEncoder encoder;
 
     public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
     	
@@ -37,7 +41,7 @@ public class UserService {
         if(!role.equals("ALUNO") && !role.equals("PROFESSOR")) throw new IllegalArgumentException("Voce deve ser ou professor ou aluno.");
         if(userRepository.existsByEmail(email)) throw new EmailAlreadyExistsException("Este email nao esta disponivel.");
         
-        User user = new User(name, email, password, role);
+        User user = new User(name, email, encoder.encode(password), role);
         
         Set<Role> securityRoles = new HashSet<Role>();
         Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
@@ -57,18 +61,16 @@ public class UserService {
     	
     }
     
-    public void editUserDetails(UUID userId, NewUserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
+    public void editUserDetails(UUID userId, UserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
     	
     	User user = findUserById(userId);
     	
     	String name = newUserDTO.getName();
     	String email = newUserDTO.getEmail();
-    	String password = newUserDTO.getPassword();
     	String role = newUserDTO.getRole();
     	
     	if(name.isBlank() || name.isEmpty()) throw new IllegalArgumentException("Nome nao pode ser vazio!");
         if(email.isBlank() || email.isEmpty()) throw new IllegalArgumentException("Email nao pode ser vazio!");
-        if(password.isBlank() || password.isEmpty()) throw new IllegalArgumentException("Senha nao pode ser vazia!");
         
         if(!user.getRole().equals(role)) throw new IllegalArgumentException("Voce nao pode alterar o tipo de usuario.");
         
@@ -76,9 +78,20 @@ public class UserService {
 
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(password);
         
         userRepository.save(user);
+    	
+    }
+    
+    public void changePassword(UUID userId, String newPass) throws UserNotFoundException, IllegalArgumentException {
+    	
+    	User user = findUserById(userId);
+    	
+    	if(newPass.isBlank() || newPass.isEmpty()) throw new IllegalArgumentException("Senha nao pode ser vazia!");
+    	
+    	user.setPassword(encoder.encode(newPass));
+    	
+    	userRepository.save(user);
     	
     }
     
@@ -89,7 +102,7 @@ public class UserService {
     }
 
     public UserDTO convertToUserDTO (User user){
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole());
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole());
 
     }
 

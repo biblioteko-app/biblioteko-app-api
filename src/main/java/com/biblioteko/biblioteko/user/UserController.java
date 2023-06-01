@@ -1,7 +1,9 @@
 package com.biblioteko.biblioteko.user;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -9,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.response.MessageResponse;
+import com.biblioteko.biblioteko.response.UserInfoResponse;
 import com.biblioteko.biblioteko.roles.RoleRepository;
 import com.biblioteko.biblioteko.security.jwt.JwtUtils;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
+import com.biblioteko.biblioteko.security.services.UserDetailsImpl;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Controller
 @RequestMapping("/api/users")
@@ -39,19 +47,18 @@ public class UserController {
     private AuthUserService authUserService;
     
     @Autowired
+    AuthenticationManager authenticationManager;
+    
+    @Autowired
     JwtUtils jwtUtils;
     
     @Autowired
     RoleRepository roleRepository;
 
-    @Autowired
-    PasswordEncoder encoder;
-
    @PostMapping("/signup")
    public ResponseEntity<?> createUser(@Valid @RequestBody NewUserDTO newUserDTO) {
 	  
 	  try {
-		  newUserDTO.setPassword(encoder.encode(newUserDTO.getPassword()));
 		  UserDTO userDTO = userService.createUser(newUserDTO);
 	      return ResponseEntity.created(URI.create("/users" + userDTO.getId())).body(userDTO);
 	  }catch(IllegalArgumentException e) {
@@ -70,8 +77,11 @@ public class UserController {
 		   UserDTO userDTO = userService.getUserDetails(userId);
 
 		   return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);
+		   
 	   }catch(UserNotFoundException e) {
+		   
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
 	   }catch(Exception e) {
 		   return new ResponseEntity<>("Nao foi possivel visualizar os detalhes do usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
@@ -80,21 +90,65 @@ public class UserController {
    
    @PutMapping("/{user_id}")
    @PreAuthorize("@authUserService.checkId(#userId)")
-   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody @Valid NewUserDTO newUserDTO){
+   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody @Valid UserDTO userDTO){
 	   try {
-		   newUserDTO.setPassword(encoder.encode(newUserDTO.getPassword()));
-		   userService.editUserDetails(userId, newUserDTO);
-		   ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-			        .body(new MessageResponse("Usuario atualizado com sucesso."));
+		   
+		   userService.editUserDetails(userId, userDTO);
+
+		   UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		   
+		   userDetails.setEmail(userDTO.getEmail());
+
+		   ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+		   List<String> roles = userDetails.getAuthorities().stream()
+				   .map(item -> item.getAuthority())
+				   .collect(Collectors.toList());
+
+		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+				   .body(new UserInfoResponse(userId,
+						   userDTO.getEmail(),
+						   roles));
+		   
 	   }catch(IllegalArgumentException e) {
+		   
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		   
 	   }catch(UserNotFoundException e) {
+		   
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
 	   }catch(EmailAlreadyExistsException e) {
+		   
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		   
 	   }catch(Exception e) {
+		   
 		   return new ResponseEntity<>("Nao foi possivel alterar os detalhes do usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
+		   
+	   }
+   }
+   
+   @PutMapping("/{user_id}/changepass")
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> changeUserPassword(@PathVariable("user_id") UUID userId, @RequestBody String newPass){
+	   try {
+		   
+		 userService.changePassword(userId, newPass);
+		 ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+		 return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			        .body(new MessageResponse("Senha alterada. Refaca login."));
+		 
+	   }catch(IllegalArgumentException e) {
+		   
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		   
+	   }catch(UserNotFoundException e) {
+		   
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Nao foi possivel alterar a senha.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
    }
    
@@ -108,10 +162,15 @@ public class UserController {
 		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
 			        .body(new MessageResponse("Usuario removido com sucesso."));
 	   }catch(UserNotFoundException e) {
+		   
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
 	   }catch(Exception e) {
+		   
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
+		   
 	   }
 	   
    }
+   
 }

@@ -15,21 +15,14 @@ import lombok.Setter;
 @NoArgsConstructor
 public class NewUserDTO {
 	
-	@NotBlank
-    @Size(min = 3, max = 100)
     private String name;
     
-	@NotBlank
-    @Size(max = 50)
     @Email
     private String email;
     
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank
-    @Size(min = 6, max = 40)
     private String password;
     
-    @NotBlank
     private String role;
     
 }
