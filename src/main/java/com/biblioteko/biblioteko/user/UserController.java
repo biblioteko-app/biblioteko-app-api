@@ -4,8 +4,12 @@ import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,18 +21,37 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.response.MessageResponse;
+import com.biblioteko.biblioteko.roles.RoleRepository;
+import com.biblioteko.biblioteko.security.jwt.JwtUtils;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
+
+import jakarta.validation.Valid;
 
 @Controller
-@RequestMapping("/users/")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private AuthUserService authUserService;
+    
+    @Autowired
+    JwtUtils jwtUtils;
+    
+    @Autowired
+    RoleRepository roleRepository;
 
-   @PostMapping
-   public ResponseEntity<?> createUser(@RequestBody NewUserDTO newUserDTO) {
+    @Autowired
+    PasswordEncoder encoder;
+
+   @PostMapping("/signup")
+   public ResponseEntity<?> createUser(@Valid @RequestBody NewUserDTO newUserDTO) {
 	  
 	  try {
+		  newUserDTO.setPassword(encoder.encode(newUserDTO.getPassword()));
 		  UserDTO userDTO = userService.createUser(newUserDTO);
 	      return ResponseEntity.created(URI.create("/users" + userDTO.getId())).body(userDTO);
 	  }catch(IllegalArgumentException e) {
@@ -56,10 +79,14 @@ public class UserController {
    }
    
    @PutMapping("/{user_id}")
-   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody NewUserDTO newUserDTO){
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> editUserDetails(@PathVariable("user_id") UUID userId, @RequestBody @Valid NewUserDTO newUserDTO){
 	   try {
+		   newUserDTO.setPassword(encoder.encode(newUserDTO.getPassword()));
 		   userService.editUserDetails(userId, newUserDTO);
-		   return new ResponseEntity<>("Usuario atualizado com sucesso!", HttpStatus.OK);
+		   ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			        .body(new MessageResponse("Usuario atualizado com sucesso."));
 	   }catch(IllegalArgumentException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	   }catch(UserNotFoundException e) {
@@ -72,11 +99,14 @@ public class UserController {
    }
    
    @DeleteMapping("/{user_id}")
+   @PreAuthorize("@authUserService.checkId(#userId)")
    public ResponseEntity<?> deleteUser(@PathVariable("user_id") UUID userId){
 	   
 	   try {
 		   userService.deleteUser(userId);
-		   return new ResponseEntity<>("Usuario removido com sucesso.", HttpStatus.OK);
+		   ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+			        .body(new MessageResponse("Usuario removido com sucesso."));
 	   }catch(UserNotFoundException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	   }catch(Exception e) {

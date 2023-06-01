@@ -1,13 +1,12 @@
 package com.biblioteko.biblioteko.user;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.biblioteko.biblioteko.roles.Role;
+
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +36,12 @@ public class User {
     
     @Column(nullable = false)
     private String role;
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles", 
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> securityRoles = new HashSet<>();
     
     public User(String name, String email, String password, String role) {
     	this.name = name;

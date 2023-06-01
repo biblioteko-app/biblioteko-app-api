@@ -1,6 +1,8 @@
 package com.biblioteko.biblioteko.user;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +10,18 @@ import org.springframework.stereotype.Service;
 
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.roles.Role;
+import com.biblioteko.biblioteko.roles.RoleEnum;
+import com.biblioteko.biblioteko.roles.RoleRepository;
 
 
 @Service
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
 
     public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
     	
@@ -31,6 +39,13 @@ public class UserService {
         
         User user = new User(name, email, password, role);
         
+        Set<Role> securityRoles = new HashSet<Role>();
+        Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Erro: Security role nao encontrado."));
+        securityRoles.add(userRole);
+        
+        user.setSecurityRoles(securityRoles);
+        
         return convertToUserDTO(userRepository.save(user));
         
     }
@@ -43,6 +58,7 @@ public class UserService {
     }
     
     public void editUserDetails(UUID userId, NewUserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
+    	
     	User user = findUserById(userId);
     	
     	String name = newUserDTO.getName();
@@ -56,7 +72,7 @@ public class UserService {
         
         if(!user.getRole().equals(role)) throw new IllegalArgumentException("Voce nao pode alterar o tipo de usuario.");
         
-        if(!user.getEmail().equals(email)) throw new EmailAlreadyExistsException("Email já existe!");
+        if((!user.getEmail().equals(email)) && userRepository.existsByEmail(email)) throw new EmailAlreadyExistsException("Este endereco de email nao esta disponivel.");
 
         user.setName(name);
         user.setEmail(email);
