@@ -1,4 +1,5 @@
 package com.biblioteko.biblioteko.user;
+
 import java.util.Set;
 import java.util.UUID;
 import com.biblioteko.biblioteko.read.Read;
@@ -9,13 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
 import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 import com.biblioteko.biblioteko.roles.Role;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,7 +44,7 @@ public class User {
     private String role;
 
     @OneToMany(mappedBy = "user")
-    private Set<Read> redingList;
+    private Set<Read> readingList;
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", 
@@ -64,8 +60,8 @@ public class User {
     }
 
     public void addRead(Read read){
-        if(!redingList.contains(read)){
-            redingList.add(read);
+        if(!readingList.contains(read)){
+            readingList.add(read);
         }
     }
 }

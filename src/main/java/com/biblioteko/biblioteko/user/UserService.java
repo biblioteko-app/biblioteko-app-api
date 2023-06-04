@@ -16,6 +16,10 @@ import com.biblioteko.biblioteko.roles.Role;
 import com.biblioteko.biblioteko.roles.RoleEnum;
 import com.biblioteko.biblioteko.roles.RoleRepository;
 
+import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
+import com.biblioteko.biblioteko.exception.UserNotFoundException;
+
+
 @Service
 public class UserService {
 
@@ -113,9 +117,6 @@ public class UserService {
     public User findUserById(UUID userId) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(userId);
         if(!user.isPresent()) throw new UserNotFoundException("Usuario nao encontrado.");
-
-        return user.get();
-    }
 
     public void addRead(Read read, User user) {
         user.addRead(read);

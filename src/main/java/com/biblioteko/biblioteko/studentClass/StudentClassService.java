@@ -1,4 +1,5 @@
 package com.biblioteko.biblioteko.studentClass;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +35,7 @@ public class StudentClassService {
         }
 
         if (newStudentClassDTO.getSchoolSubject() == null || newStudentClassDTO.getSchoolSubject().isEmpty()) {
+          
             throw new IllegalArgumentException("Disciplina inválida.");
         }
 
@@ -45,6 +47,7 @@ public class StudentClassService {
         studentClass.setOwner(user);
         return convertToStudentClassDTO(studentClassRepository.save(studentClass));
     }
+
 
     public StudentClassDTO convertToStudentClassDTO(StudentClass studentClass) {
         if (studentClass.getStudents() == null) {
@@ -82,6 +85,7 @@ public class StudentClassService {
 
     public void removeStudentClass(UUID classId, UUID userId)
             throws StudentClassNotFoundException, UserUnauthorized, UserNotFoundException {
+      
         User user = userService.findUserById(userId);
 
         StudentClass studentClass = findStudentClassById(classId);
@@ -106,6 +110,7 @@ public class StudentClassService {
         StudentClass studentClass = findStudentClassById(classId);
 
         if (!studentClass.getOwner().getId().equals(user.getId())) {
+          
             throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
         }
 
@@ -124,7 +129,7 @@ public class StudentClassService {
         Optional<StudentClass> studentClass = this.studentClassRepository.findById(studentClassId);
         if (!studentClass.isPresent())
             throw new StudentClassNotFoundException("Turma não encontrada.");
-
+      
         return studentClass.get();
     }
 

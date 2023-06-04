@@ -1,4 +1,5 @@
 package com.biblioteko.biblioteko.studentClass;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,4 +17,5 @@ public class NewStudentClassDTO {
         this.schoolSubject = schoolSubject;
         this.photo = photo;
     }
+
 }

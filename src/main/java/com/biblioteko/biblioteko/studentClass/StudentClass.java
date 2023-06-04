@@ -1,4 +1,10 @@
 package com.biblioteko.biblioteko.studentClass;
+
+import java.util.Set;
+import java.util.UUID;
+
+import com.biblioteko.biblioteko.user.User;
+
 import java.util.Set;
 import java.util.UUID;
 import com.biblioteko.biblioteko.user.User;
@@ -56,5 +62,7 @@ public class StudentClass {
 		}
 		
 		students.removeIf(student -> studentIdsToRemove.contains(student.getId()));
+
 	}   
+
 }

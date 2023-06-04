@@ -1,6 +1,8 @@
 package com.biblioteko.biblioteko.studentClass;
+
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -94,4 +96,5 @@ public class StudentClassController {
             return new ResponseEntity<>("Erro ao editar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }    
+  
 }

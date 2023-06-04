@@ -2,6 +2,7 @@ package com.biblioteko.biblioteko.user;
 import java.util.UUID;
 
 import java.net.URI;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,6 +36,9 @@ import com.biblioteko.biblioteko.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
+import com.biblioteko.biblioteko.exception.UserNotFoundException;
 
 @Controller
 @RequestMapping("/api/users")
@@ -166,8 +170,6 @@ public class UserController {
 	   }catch(Exception e) {
 		   
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
-
-	   }   
 	   
    }
    
