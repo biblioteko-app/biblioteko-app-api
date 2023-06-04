@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.user.UserDTO;
 
 @Controller
@@ -25,6 +26,9 @@ public class StudentClassController {
 
     @Autowired
     StudentClassService studentClassService;
+    
+    @Autowired
+    private AuthUserService authUserService;
 
     @PostMapping("/{user_id}")
     public ResponseEntity<?> createStudentClass(@RequestBody NewStudentClassDTO newStudentClassDTO, @PathVariable("user_id") UUID userId) {

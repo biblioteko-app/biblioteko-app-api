@@ -12,15 +12,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @Controller
-@RequestMapping("/book")
+@RequestMapping("/api/book")
 public class BookController {
     @Autowired 
     private BookService bookService;
+    
+    @Autowired
+    private AuthUserService authUserService;
 
 	@PostMapping("/{user_id}")
     public ResponseEntity<?> createBook(@RequestBody NewBookDTO newBookDTO, @PathVariable("user_id") UUID userId) {

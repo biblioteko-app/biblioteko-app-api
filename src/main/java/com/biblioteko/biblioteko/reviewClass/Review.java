@@ -14,13 +14,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "reviews")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
@@ -33,14 +41,4 @@ public class Review {
     @Column(nullable = false)
     private String comment;
 
-    public void setBook(Book book2) {
-    }
-
-    public void setStudent(StudentClass student2) {
-    }
-
-    public void setComment(String comment2) {
-    }
-
-    // Adicionar construtores
 }

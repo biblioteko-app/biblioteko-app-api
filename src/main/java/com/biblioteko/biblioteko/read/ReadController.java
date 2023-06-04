@@ -13,12 +13,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
 
 @Controller
-@RequestMapping("/read")
+@RequestMapping("/api/read")
 public class ReadController {
     @Autowired
     ReadService readService;
+    
+    @Autowired
+    private AuthUserService authUserService;
 
    @PostMapping("/{user_id}/{book_id}")
    public ResponseEntity<?> addBookToReadingList(@RequestBody ReadPagesDTO readPagesDTO, @PathVariable("user_id") UUID userId, @PathVariable("book_id") UUID bookId) {

@@ -14,11 +14,12 @@ import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.book.BookService;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.studentClass.StudentClass;
 import com.biblioteko.biblioteko.studentClass.StudentClassService;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping("/api/reviews")
 public class ReviewController {
 	
 	@Autowired
@@ -29,6 +30,9 @@ public class ReviewController {
 	
 	@Autowired
 	private StudentClassService studentClassService;
+	
+	@Autowired
+    private AuthUserService authUserService;
 
  
     @PostMapping
