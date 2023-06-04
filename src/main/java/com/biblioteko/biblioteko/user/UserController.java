@@ -1,4 +1,5 @@
 package com.biblioteko.biblioteko.user;
+import java.util.UUID;
 
 import java.net.URI;
 import java.util.List;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.response.MessageResponse;
@@ -60,7 +60,7 @@ public class UserController {
 	  
 	  try {
 		  UserDTO userDTO = userService.createUser(newUserDTO);
-	      return ResponseEntity.created(URI.create("/users" + userDTO.getId())).body(userDTO);
+	      return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
 	  }catch(IllegalArgumentException e) {
 		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	  }catch(EmailAlreadyExistsException e) {
@@ -68,7 +68,6 @@ public class UserController {
 	  }catch(Exception e) {
 		  return new ResponseEntity<String>("Erro ao criar usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
 	  }
-	  
    }
    
    @GetMapping("/{user_id}")
@@ -84,8 +83,7 @@ public class UserController {
 		   
 	   }catch(Exception e) {
 		   return new ResponseEntity<>("Nao foi possivel visualizar os detalhes do usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
-	   }
-	   
+	   }  
    }
    
    @PutMapping("/{user_id}")
@@ -168,8 +166,8 @@ public class UserController {
 	   }catch(Exception e) {
 		   
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
-		   
-	   }
+
+	   }   
 	   
    }
    

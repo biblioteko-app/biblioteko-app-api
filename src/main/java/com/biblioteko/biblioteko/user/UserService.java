@@ -4,20 +4,21 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.read.Read;
+
 import com.biblioteko.biblioteko.roles.Role;
 import com.biblioteko.biblioteko.roles.RoleEnum;
 import com.biblioteko.biblioteko.roles.RoleRepository;
 
-
 @Service
 public class UserService {
+
     @Autowired
     private UserRepository userRepository;
     
@@ -51,14 +52,11 @@ public class UserService {
         user.setSecurityRoles(securityRoles);
         
         return convertToUserDTO(userRepository.save(user));
-        
     }
     
     public UserDTO getUserDetails(UUID userId) throws UserNotFoundException {
         User user = findUserById(userId);
-    	
     	return convertToUserDTO(user);
-    	
     }
     
     public void editUserDetails(UUID userId, UserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
@@ -79,8 +77,7 @@ public class UserService {
         user.setName(name);
         user.setEmail(email);
         
-        userRepository.save(user);
-    	
+        userRepository.save(user);	
     }
     
     public void changePassword(UUID userId, String newPass) throws UserNotFoundException, IllegalArgumentException {
@@ -102,15 +99,27 @@ public class UserService {
     }
 
     public UserDTO convertToUserDTO (User user){
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        if(user.getRedingList() == null){
+            return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), null);
+        }
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), getUserReadingBooks(user)); 
+    }
+
+    public Set<UUID> getUserReadingBooks(User user){
+       return user.getRedingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
 
     }
 
     public User findUserById(UUID userId) throws UserNotFoundException {
-        Optional<User> user = this.userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
         if(!user.isPresent()) throw new UserNotFoundException("Usuario nao encontrado.");
 
         return user.get();
+    }
+
+    public void addRead(Read read, User user) {
+        user.addRead(read);
+        userRepository.save(user);
     }
 
 }
