@@ -5,6 +5,9 @@ import java.util.UUID;
 
 import com.biblioteko.biblioteko.user.User;
 
+import java.util.Set;
+import java.util.UUID;
+import com.biblioteko.biblioteko.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -59,11 +62,7 @@ public class StudentClass {
 		}
 		
 		students.removeIf(student -> studentIdsToRemove.contains(student.getId()));
-	}
-	
 
+	}   
 
-
-
-    
 }

@@ -103,4 +103,9 @@ public class BookService {
 
     }
 }
+
+    public Book findById(Long bookId) {
+        return null;
+    }
+  
 }

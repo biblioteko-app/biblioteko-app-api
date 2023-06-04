@@ -1,4 +1,7 @@
--- Exemplo 
-insert into usuarios (name) values('Ana Paula');
-insert into usuarios (name) values('Vitor');
-insert into usuarios (name) values('Laysa');
+insert into users (id, name, email, password, role) values('a969edd2-fb2d-11ed-be56-0242ac120002','Ana Paula', 'anapaula@abcefg.com', '123456', 'PROFESSOR');
+insert into users (id, name, email, password, role) values('bec67d80-fb2d-11ed-be56-0242ac120002','Vitor', 'vitor@abcdefg.com', '789000', 'ALUNO');
+insert into users (id, name, email, password, role) values('c49ec474-fb2d-11ed-be56-0242ac120002', 'Laysa', 'laysa@abcdefg.com', 'aaaddd', 'PROFESSOR');
+
+INSERT INTO roles(name) VALUES('ROLE_USER');
+INSERT INTO roles(name) VALUES('ROLE_MODERATOR');
+INSERT INTO roles(name) VALUES('ROLE_ADMIN');

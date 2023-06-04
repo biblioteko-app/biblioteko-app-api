@@ -14,14 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorized;
 import com.biblioteko.biblioteko.user.UserDTO;
 
 @Controller
-@RequestMapping("/studentclass")
+@RequestMapping("/api/studentclass")
 public class StudentClassController {
 
     @Autowired
@@ -96,7 +95,6 @@ public class StudentClassController {
         } catch (Exception e) {
             return new ResponseEntity<>("Erro ao editar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    
+    }    
+  
 }

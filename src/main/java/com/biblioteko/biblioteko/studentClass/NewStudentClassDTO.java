@@ -16,7 +16,6 @@ public class NewStudentClassDTO {
         this.classYear = classYear;
         this.schoolSubject = schoolSubject;
         this.photo = photo;
-
     }
-    
+
 }
