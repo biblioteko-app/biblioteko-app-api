@@ -41,7 +41,7 @@ public class BookService {
         
     }
 
-    public Book findBookById(UUID bookId) throws BookNotFoundException {
+    public Book findBookById(Long bookId) throws BookNotFoundException {
         Optional<Book> book = this.bookRepository.findById(bookId);
         if(!book.isPresent()) throw new BookNotFoundException("Livro não encontrado.");
 
@@ -103,4 +103,8 @@ public class BookService {
 
     }
 }
+
+    public static Book findById(Long bookId) {
+        return null;
+    }
 }
