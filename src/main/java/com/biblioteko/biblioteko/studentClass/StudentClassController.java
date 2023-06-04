@@ -18,7 +18,7 @@ import com.biblioteko.biblioteko.exception.UserUnauthorized;
 import com.biblioteko.biblioteko.user.UserDTO;
 
 @Controller
-@RequestMapping("/studentclass")
+@RequestMapping("/api/studentclass")
 public class StudentClassController {
 
     @Autowired
