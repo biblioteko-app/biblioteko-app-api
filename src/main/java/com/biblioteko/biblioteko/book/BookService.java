@@ -104,8 +104,12 @@ public class BookService {
     }
 }
 
-    public Book findById(Long bookId) {
-        return null;
+    public Book findById(UUID bookId) throws BookNotFoundException {
+        
+    	if(!bookRepository.existsById(bookId)) throw new BookNotFoundException("Livro não encontrado.");
+    	
+    	return bookRepository.findById(bookId).get();
+    	
     }
   
 }

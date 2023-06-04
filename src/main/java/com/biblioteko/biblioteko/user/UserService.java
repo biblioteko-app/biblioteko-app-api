@@ -103,20 +103,22 @@ public class UserService {
     }
 
     public UserDTO convertToUserDTO (User user){
-        if(user.getRedingList() == null){
-            return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), null);
+        if(user.getReadingList() == null){
+            return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole(), null);
         }
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), getUserReadingBooks(user)); 
+        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole(), getUserReadingBooks(user)); 
     }
 
     public Set<UUID> getUserReadingBooks(User user){
-       return user.getRedingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
+       return user.getReadingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
 
     }
 
     public User findUserById(UUID userId) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(userId);
         if(!user.isPresent()) throw new UserNotFoundException("Usuario nao encontrado.");
+        return user.get();
+    }
 
     public void addRead(Read read, User user) {
         user.addRead(read);

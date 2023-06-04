@@ -53,6 +53,6 @@ public class ReadService {
     public Set<BookDTO> getBooksToReadingList(UUID userId) throws UserNotFoundException, BookNotFoundException{
         User user = userService.findUserById(userId);
     
-        return user.getRedingList().stream().map(r -> bookService.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
+        return user.getReadingList().stream().map(r -> bookService.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
     } 
 }

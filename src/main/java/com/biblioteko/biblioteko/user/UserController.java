@@ -156,7 +156,7 @@ public class UserController {
    
    @DeleteMapping("/{user_id}")
    @PreAuthorize("@authUserService.checkId(#userId)")
-   public ResponseEntity<?> deleteUser(@PathVariable("user_id") UUID userId){
+   public ResponseEntity<?> deleteUser(@PathVariable("user_id") UUID userId) {
 	   
 	   try {
 		   userService.deleteUser(userId);
@@ -172,5 +172,6 @@ public class UserController {
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   
    }
+   } 
    
 }

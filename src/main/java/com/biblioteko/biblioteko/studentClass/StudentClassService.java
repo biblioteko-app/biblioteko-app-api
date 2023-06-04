@@ -133,8 +133,10 @@ public class StudentClassService {
         return studentClass.get();
     }
 
-    public static StudentClass findById(Long studentId) {
-        return null;
+    public StudentClass findById(UUID studentClassId) throws StudentClassNotFoundException {
+        if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada.");
+        
+        return studentClassRepository.findById(studentClassId).get();
     }
 
 }

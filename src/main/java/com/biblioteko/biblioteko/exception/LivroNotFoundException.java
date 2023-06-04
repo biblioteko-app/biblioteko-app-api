@@ -1,4 +1,4 @@
-package com.biblioteko.biblioteko.livro.Exceptions;
+package com.biblioteko.biblioteko.exception;
 
 public class LivroNotFoundException extends Exception{
     public LivroNotFoundException(String msg){

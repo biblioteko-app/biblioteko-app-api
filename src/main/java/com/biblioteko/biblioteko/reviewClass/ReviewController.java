@@ -1,5 +1,7 @@
 package com.biblioteko.biblioteko.reviewClass;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,33 +12,44 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.book.BookService;
+import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.studentClass.StudentClass;
 import com.biblioteko.biblioteko.studentClass.StudentClassService;
 
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
-    private final ReviewService reviewService;
+	
+	@Autowired
+    private ReviewService reviewService;
+	
+	@Autowired
+	private BookService bookService;
+	
+	@Autowired
+	private StudentClassService studentClassService;
 
-    @Autowired
-    public ReviewController(ReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
-
+ 
     @PostMapping
-    public ResponseEntity<String> createReview(@RequestParam Long bookId, @RequestParam Long studentId,
+    public ResponseEntity<String> createReview(@RequestParam UUID bookId, @RequestParam UUID studentId,
             @RequestParam String comment) {
-        Book book = BookService.findById(bookId);
+    	
+    	try {
 
-        StudentClass student = StudentClassService.findById(studentId);
+    		Book book = bookService.findById(bookId);
 
-        if (book == null || student == null) {
-            return new ResponseEntity<>("Livro ou ID de estudante inválido.", HttpStatus.BAD_REQUEST);
-        }
+    		StudentClass student = studentClassService.findById(studentId);
 
-        reviewService.createReview(book, student, comment);
+    		reviewService.createReview(book, student, comment);
 
-        return new ResponseEntity<>("Avaliação criada com sucesso!.", HttpStatus.CREATED);
+    	}catch(BookNotFoundException | StudentClassNotFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);	
+    	}catch(Exception e) {
+    		return new ResponseEntity<>("Não foi possível enviar avaliação.", HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+
+    	return new ResponseEntity<>("Avaliação criada com sucesso!.", HttpStatus.CREATED);
     }
 
 }

@@ -21,17 +21,6 @@ public class UserDTO {
     
     private String role;
 
-    private UUID id;
-
     private Set<UUID> readingList;
-
-    public UserDTO(UUID id, String name, String email, String password, String role, Set<UUID> readingList) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.id = id;
-        this.readingList = readingList;
-    }
 
 }
