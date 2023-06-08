@@ -132,7 +132,7 @@ public class StudentClassController {
 
 
     @GetMapping("/{user_id}/{class_id}/progress")
-    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
+    @PreAuthorize("@authUserService.checkId(#userId)")
     public ResponseEntity<?> getClassProgress(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId){
     	
     	try {

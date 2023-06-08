@@ -231,6 +231,7 @@ public class UserController {
    }
 
    @GetMapping("/{user_id}/favorite-books")
+   @PreAuthorize("@authUserService.checkId(#userId)")
    public ResponseEntity<?> getFavoriteBooks(@PathVariable("user_id") UUID userId){
 	   try {
 		   Set<BookDTO> starredBooks = userService.getFavoriteBooks(userId);
@@ -244,5 +245,23 @@ public class UserController {
 		   return new ResponseEntity<>("Nao foi possivel pegar os livros favoritados.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }  
    }
+
+
+   @GetMapping("/{user_id}/finished-books")
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> getFinishedBooks(@PathVariable("user_id") UUID userId){
+	   try {
+		   Set<BookDTO> finishedBooks = userService.getFinishedBooks(userId);
+
+		   return new ResponseEntity<>(finishedBooks, HttpStatus.OK);
+		   
+	   }catch(UserNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Nao foi possivel pegar os livros finalizados.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }  
+   }
+   
    
 }
