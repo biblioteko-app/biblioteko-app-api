@@ -42,4 +42,12 @@ public class Read {
         this.book = book;
         this.readPages = readPages;
     }
+    
+    public boolean isFinalized() {
+    	return this.readPages == this.book.getPages();
+    }
+    
+    public Float getProgress() {
+    	return (Float) (this.readPages / (float) this.book.getPages());
+    }
 }

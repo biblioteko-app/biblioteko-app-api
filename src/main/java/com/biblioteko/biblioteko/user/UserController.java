@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.net.URI;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
+import com.biblioteko.biblioteko.exception.NoClassesFoundException;
+import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
+import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.response.MessageResponse;
 import com.biblioteko.biblioteko.response.UserInfoResponse;
@@ -32,6 +38,8 @@ import com.biblioteko.biblioteko.roles.RoleRepository;
 import com.biblioteko.biblioteko.security.jwt.JwtUtils;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.security.services.UserDetailsImpl;
+import com.biblioteko.biblioteko.studentClass.StudentClassDTO;
+import com.biblioteko.biblioteko.studentClass.StudentClassService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -46,6 +54,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private StudentClassService studentClassService;
     
     @Autowired
     private AuthUserService authUserService;
@@ -172,6 +183,36 @@ public class UserController {
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   
    }
-   } 
+   }
+   
+   @GetMapping("/{user_id}/classes")
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> getClasses(@PathVariable("user_id") UUID userId) {
+	   try {
+		   Set<StudentClassDTO> classes = studentClassService.getClasses(userId);
+		   return new ResponseEntity<Set<StudentClassDTO>>(classes, HttpStatus.OK);
+	   }catch(UserNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+	   }catch(NoClassesFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }
+   }
+   
+   @PostMapping("/{user_id}/joinclass")
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> joinClass(@PathVariable("user_id") UUID userId, @RequestParam("classId") UUID classId){
+	   try {
+		   studentClassService.joinClass(userId, classId);
+		   return new ResponseEntity<>("Você agora faz parte da turma.", HttpStatus.OK);
+	   }catch(UserNotFoundException | StudentClassNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+	   }catch(UserAlreadyAMemberOfClassException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }
+   }
    
 }

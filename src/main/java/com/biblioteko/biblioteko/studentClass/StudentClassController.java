@@ -1,6 +1,7 @@
 package com.biblioteko.biblioteko.studentClass;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
+import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.NoClassesFoundException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
@@ -106,6 +111,24 @@ public class StudentClassController {
         } catch (Exception e) {
             return new ResponseEntity<>("Erro ao editar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }    
+    }
+    
+    @PostMapping("/{user_id}/{class_id}/{book_id}")
+    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
+    public ResponseEntity<?> suggestBook(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
+    	
+    	try {
+    		studentClassService.suggestBook(userId, bookId, classId);
+    		return new ResponseEntity<>("Livro sugerido com sucesso!", HttpStatus.OK);
+    	}catch(UserNotFoundException | BookNotFoundException | StudentClassNotFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    	}catch(UserUnauthorizedException | BookAlreadySuggestedException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    	}catch(Exception e) {
+    		return new ResponseEntity<>("Erro ao sugerir livro.", HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+    	
+    }
+    
   
 }

@@ -10,7 +10,9 @@ import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserService;
 import com.biblioteko.biblioteko.book.BookService;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.ReadNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 
 @Service
 public class ReadService {
@@ -54,5 +56,23 @@ public class ReadService {
         User user = userService.findUserById(userId);
     
         return user.getReadingList().stream().map(r -> bookService.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
-    } 
+    }
+    
+    public ReadDTO alterProgress(UUID userId, UUID readId, Integer readPages) throws UserNotFoundException, UserUnauthorizedException,
+    IllegalArgumentException, ReadNotFoundException {
+    	
+    	if(!userService.existsById(userId)) throw new UserNotFoundException("Usuário inexistente.");
+    	if(!readRepository.existsById(readId)) throw new ReadNotFoundException("Leitura inexistente.");
+    	
+    	Read read = readRepository.findById(readId).get();
+    	
+    	if(!read.getUser().getId().equals(userId)) throw new UserUnauthorizedException("Você não possui autorização para realizar esta ação.");
+    	
+    	if(readPages <= read.getReadPages()) throw new IllegalArgumentException("O número de páginas deve ser maior que o número atual.");
+    	
+    	read.setReadPages(readPages);
+    	readRepository.save(read);
+    	return convertReadToDto(read);
+    	
+    }
 }

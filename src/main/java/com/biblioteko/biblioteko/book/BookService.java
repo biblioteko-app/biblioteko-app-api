@@ -95,7 +95,7 @@ public class BookService {
         return convertToBookDTO(book);
     }
 
-    public void removeBook(UUID bookId, UUID userId) throws BookNotFoundException, UserNotFoundException, UserUnauthorizedException{
+    public void removeBook(UUID bookId, UUID userId) throws BookNotFoundException, UserNotFoundException, UserUnauthorizedException {
         User user = userService.findUserById(userId);
         Book book = findBookById(bookId);
         

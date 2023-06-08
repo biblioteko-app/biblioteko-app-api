@@ -3,6 +3,7 @@ package com.biblioteko.biblioteko.studentClass;
 import java.util.Set;
 import java.util.UUID;
 
+import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.user.User;
 
 import java.util.Set;
@@ -55,6 +56,14 @@ public class StudentClass {
         inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
     )
 	private Set<User> students;
+	
+	@ManyToMany
+    @JoinTable(
+        name = "class_suggested_books",
+        joinColumns = @JoinColumn(name = "studentClass_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
+    )
+	private Set<Book> suggestedBooks;
 
 	public void removeStudents(Set<UUID> studentIdsToRemove) {
 		if (students == null || studentIdsToRemove == null || studentIdsToRemove.isEmpty()) {
@@ -63,6 +72,26 @@ public class StudentClass {
 		
 		students.removeIf(student -> studentIdsToRemove.contains(student.getId()));
 
-	}   
+	}
+	
+	public boolean addSuggestedBook(Book book) {
+		
+		return this.suggestedBooks.add(book);
+		
+	}
+	
+	public boolean removeSuggestedBook(Book book) {
+		
+		return this.suggestedBooks.remove(book);
+		
+	}
+	
+	public boolean bookAlreadySuggested(Book book) {
+		return this.suggestedBooks.contains(book);
+	}
+	
+	public boolean addMember(User member) {
+		return this.students.add(member);
+	}
 
 }

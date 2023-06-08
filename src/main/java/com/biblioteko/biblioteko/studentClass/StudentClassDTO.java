@@ -3,6 +3,8 @@ package com.biblioteko.biblioteko.studentClass;
 import java.util.Set;
 import java.util.UUID;
 import com.biblioteko.biblioteko.user.User;
+import com.biblioteko.biblioteko.user.UserDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +19,8 @@ public class StudentClassDTO {
     private int classYear;
 	private String schoolSubject;
 	private String photo;
-    private User owner;
+    private UserDTO owner;
     private Set<UUID> students;
+    private Set<UUID> suggestedBooks;
 
 }

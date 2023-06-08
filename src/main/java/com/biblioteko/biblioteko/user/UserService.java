@@ -113,6 +113,10 @@ public class UserService {
        return user.getReadingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
 
     }
+    
+    public boolean existsById(UUID userId) {
+    	return userRepository.existsById(userId);
+    }
 
     public User findUserById(UUID userId) throws UserNotFoundException {
         Optional<User> user = userRepository.findById(userId);
