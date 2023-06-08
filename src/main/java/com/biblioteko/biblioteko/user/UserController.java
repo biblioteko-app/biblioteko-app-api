@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.net.URI;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.response.MessageResponse;
@@ -173,5 +176,20 @@ public class UserController {
 	   
    }
    } 
+
+   @GetMapping("/{user_id}/favorite-books")
+   public ResponseEntity<?> getFavoriteBooks(@PathVariable("user_id") UUID userId){
+	   try {
+		   Set<BookDTO> starredBooks = userService.getFavoriteBooks(userId);
+
+		   return new ResponseEntity<>(starredBooks, HttpStatus.OK);
+		   
+	   }catch(UserNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Nao foi possivel pegar os livros favoritados.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }  
+   }
    
 }
