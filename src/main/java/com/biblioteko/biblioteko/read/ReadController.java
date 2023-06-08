@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.ReadCompletedException;
 import com.biblioteko.biblioteko.exception.ReadNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
@@ -68,7 +69,7 @@ public class ReadController {
 		  return new ResponseEntity<ReadDTO>(readDTO, HttpStatus.OK);
 	  }catch(UserNotFoundException | ReadNotFoundException e) {
 		  return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-	  }catch(UserUnauthorizedException | IllegalArgumentException e) {
+	  }catch(UserUnauthorizedException | IllegalArgumentException | ReadCompletedException e) {
 		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	  }catch(Exception e) {
 		  return new ResponseEntity<String>("Erro ao alterar progresso da leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
