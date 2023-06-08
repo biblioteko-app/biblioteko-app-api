@@ -145,5 +145,19 @@ public class UserService {
 
     }
 
+    public Set<BookDTO> getFinishedBooks(UUID userId) throws UserNotFoundException{
+        User user = findUserById(userId);
+
+       Set<BookDTO> finishedBooks = user.getReadingList().stream().map(r -> {
+            if(r.isFinalized()){
+                return BookMapper.convertToBookDTO(r.getBook());
+            }
+            return null;
+        }).collect(Collectors.toSet());
+
+        finishedBooks.remove(null);
+        return finishedBooks;
+    }
+
 }
 
