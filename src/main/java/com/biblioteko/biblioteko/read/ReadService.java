@@ -9,6 +9,8 @@ import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.ReadMapper;
+import com.biblioteko.biblioteko.utils.UserMapper;
 import com.biblioteko.biblioteko.book.BookService;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.ReadCompletedException;
@@ -34,11 +36,6 @@ public class ReadService {
 
     }
 
-    public ReadDTO convertReadToDto(Read read){
-        return new ReadDTO(read.getId(), read.getUser(), read.getBook(), read.getReadPages());
-
-    }
-
     public ReadDTO addBookToReadingList(ReadPagesDTO readPagesDTO, UUID userId, UUID bookId) throws UserNotFoundException, BookNotFoundException {
         User user = userService.findUserById(userId);
         Book book = bookService.findBookById(bookId);
@@ -51,7 +48,7 @@ public class ReadService {
 
         userService.addRead(read, user);
         
-        return convertReadToDto(read);
+        return ReadMapper.convertReadToDto(read);
     }
 
     public Set<BookDTO> getBooksToReadingList(UUID userId) throws UserNotFoundException, BookNotFoundException{
@@ -78,7 +75,7 @@ public class ReadService {
     	
     	read.setReadPages(readPages);
     	readRepository.save(read);
-    	return convertReadToDto(read);
+    	return ReadMapper.convertReadToDto(read);
     }
 
 }
