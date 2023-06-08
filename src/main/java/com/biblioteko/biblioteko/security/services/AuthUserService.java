@@ -11,6 +11,7 @@ import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserRepository;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
 public class AuthUserService {
@@ -31,7 +32,7 @@ public class AuthUserService {
 		
 		UserDetails currDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User user = userRepository.findByEmail(currDetails.getUsername()).get();
-		return userService.convertToUserDTO(user);
+		return UserMapper.convertToUserDTO(user);
 		
 	}
 	

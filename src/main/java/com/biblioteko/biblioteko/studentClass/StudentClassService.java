@@ -13,6 +13,7 @@ import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
 public class StudentClassService {
@@ -78,7 +79,7 @@ public class StudentClassService {
 
         List<UserDTO> studentsOfClass = studentClass.getStudents()
                 .stream()
-                .map(u -> userService.convertToUserDTO(u))
+                .map(u -> UserMapper.convertToUserDTO(u))
                 .collect(Collectors.toList());
         return studentsOfClass;
     }
