@@ -113,7 +113,7 @@ public class StudentClassController {
         }
     }
     
-    @PostMapping("/{user_id}/{class_id}/{book_id}")
+    @PutMapping("/{user_id}/{class_id}/{book_id}")
     @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
     public ResponseEntity<?> suggestBook(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
     	
@@ -126,6 +126,22 @@ public class StudentClassController {
     		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     	}catch(Exception e) {
     		return new ResponseEntity<>("Erro ao sugerir livro.", HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+    	
+    }
+
+
+    @GetMapping("/{user_id}/{class_id}/progress")
+    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
+    public ResponseEntity<?> getClassProgress(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId){
+    	
+    	try {
+    		ClassProgressDTO classProgressDTO = studentClassService.getClassProgress(userId, classId);
+    		return new ResponseEntity<>(classProgressDTO, HttpStatus.OK);
+    	}catch(UserNotFoundException | StudentClassNotFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    	}catch(Exception e) {
+    		return new ResponseEntity<>("Erro ao obter progresso da turma.", HttpStatus.INTERNAL_SERVER_ERROR);
     	}
     	
     }

@@ -1,5 +1,6 @@
 package com.biblioteko.biblioteko.studentClass;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,10 +21,13 @@ import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
+import com.biblioteko.biblioteko.read.Read;
+import com.biblioteko.biblioteko.read.ReadDTO;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.ReadMapper;
 import com.biblioteko.biblioteko.utils.StudentClassMapper;
 import com.biblioteko.biblioteko.utils.UserMapper;
 
@@ -146,9 +150,34 @@ public class StudentClassService {
     	
     }
     
-    public List<BookDTO> getClassProgress(){
-    	//TODO
-    	return null;
+    public ClassProgressDTO getClassProgress(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException{
+        userService.findUserById(userId);
+        StudentClass studentClass = findById(classId);
+
+        List<UserDTO> studentsDTO = getStudentsOfClass(classId);
+
+        List<User> students = new ArrayList<>();
+
+        for (UserDTO student : studentsDTO) {
+            students.add(userService.findUserById(student.getId()));
+        }
+        
+        List<ReadDTO> individualStudentProgressByBook = new ArrayList<>();
+
+        float sumProgressStudentsClass = 0;
+
+    	for (User student : students) {
+            for (Read read : student.getReadingList()) {
+                if (studentClass.getSuggestedBooks().contains(read.getBook())) {
+                    sumProgressStudentsClass += read.getProgress();
+                    individualStudentProgressByBook.add(ReadMapper.convertReadToDto(read));
+                }
+            }
+        }
+
+        Float overallClassProgress = sumProgressStudentsClass / students.size();
+        
+        return new ClassProgressDTO(overallClassProgress, individualStudentProgressByBook);
     	
     }
     

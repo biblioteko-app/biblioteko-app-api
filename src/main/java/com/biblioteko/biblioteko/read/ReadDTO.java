@@ -1,7 +1,8 @@
 package com.biblioteko.biblioteko.read;
 import java.util.UUID;
-import com.biblioteko.biblioteko.book.Book;
-import com.biblioteko.biblioteko.user.User;
+import com.biblioteko.biblioteko.book.BookDTO;
+import com.biblioteko.biblioteko.user.UserDTO;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,13 +12,13 @@ public class ReadDTO {
 
     private UUID id;
 
-    private User user;
+    private UserDTO user;
     
-    private Book book;
+    private BookDTO book;
     
     private Integer readPages;
 
-    public ReadDTO(UUID id, User user, Book book, Integer readPages) {
+    public ReadDTO(UUID id, UserDTO user, BookDTO book, Integer readPages) {
         this.id = id;
         this.user = user;
         this.book = book;
