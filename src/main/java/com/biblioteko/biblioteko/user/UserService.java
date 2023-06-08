@@ -12,12 +12,14 @@ import org.springframework.stereotype.Service;
 import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
+import com.biblioteko.biblioteko.exception.UserAlreadyLoggedInException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.read.Read;
 
 import com.biblioteko.biblioteko.roles.Role;
 import com.biblioteko.biblioteko.roles.RoleEnum;
 import com.biblioteko.biblioteko.roles.RoleRepository;
+import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
 import com.biblioteko.biblioteko.utils.UserMapper;
 
@@ -32,11 +34,15 @@ public class UserService {
     private RoleRepository roleRepository;
     
     @Autowired
-    PasswordEncoder encoder;
+    private PasswordEncoder encoder;
     
-    private UserMapper userMapper = new UserMapper();
+    @Autowired
+    private AuthUserService authUserService;
+    
 
-    public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
+    public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException, UserAlreadyLoggedInException {
+    	
+    	if(authUserService.isAuthenticated()) throw new UserAlreadyLoggedInException("Você já está logado no sistema.");
     	
     	String name = newUserDTO.getName();
     	String email = newUserDTO.getEmail();
@@ -60,6 +66,7 @@ public class UserService {
         user.setSecurityRoles(securityRoles);
         
         return UserMapper.convertToUserDTO(userRepository.save(user));
+        
     }
     
     public UserDTO getUserDetails(UUID userId) throws UserNotFoundException {

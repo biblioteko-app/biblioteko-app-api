@@ -93,5 +93,9 @@ public class StudentClass {
 	public boolean addMember(User member) {
 		return this.students.add(member);
 	}
+	
+	public boolean removeMember(User member) {
+		return this.students.remove(member);
+	}
 
 }

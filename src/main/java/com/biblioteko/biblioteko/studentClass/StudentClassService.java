@@ -17,12 +17,14 @@ import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
+import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.StudentClassMapper;
 import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
@@ -33,14 +35,9 @@ public class StudentClassService {
     
     @Autowired
     private BookRepository bookRepository;
-    
-    @Autowired
-    private BookService bookService;
 
     @Autowired
     private UserService userService;
-    
-    private BookMapper mapper = new BookMapper();
 
     public StudentClassDTO createStudentClass(NewStudentClassDTO newStudentClassDTO, UUID userId)
             throws UserNotFoundException {
@@ -64,56 +61,7 @@ public class StudentClassService {
         studentClass.setSchoolSubject(newStudentClassDTO.getSchoolSubject());
         studentClass.setPhoto(newStudentClassDTO.getPhoto());
         studentClass.setOwner(user);
-        return convertToStudentClassDTO(studentClassRepository.save(studentClass));
-    }
-
-
-    public StudentClassDTO convertToStudentClassDTO(StudentClass studentClass) {
-    	
-    	User owner = studentClass.getOwner();
-    	
-    	UserDTO ownerDto = new UserDTO(
-    			           owner.getId(),
-    			           owner.getName(),
-    			           owner.getEmail(),
-    			           owner.getRole(),
-    			           owner.getReadingList().stream()
-    			                                 .map(l -> mapper.convertToBookDTO(l.getBook()))
-    			                                 .collect(Collectors.toSet()),
-    			           owner.getStarredBooks().stream()
-    			                                  .map(b -> mapper.convertToBookDTO(b))
-    			                                  .collect(Collectors.toSet())
-    			);
-    	
-    	StudentClassDTO prev = new StudentClassDTO(studentClass.getId(),
-                studentClass.getName(),
-                studentClass.getClassYear(),
-                studentClass.getSchoolSubject(),
-                studentClass.getPhoto(),
-                ownerDto,
-                null,
-                null);
-    	
-        if (studentClass.getStudents() != null) {
-            
-        	prev.setStudents(studentClass.getStudents()
-                            .stream()
-                            .map(u -> u.getId())
-                            .collect(Collectors.toSet()));
-        }
-        
-        if(studentClass.getSuggestedBooks() != null) {
-        	
-        	prev.setSuggestedBooks(studentClass.getSuggestedBooks()
-                            .stream()
-                            .map(u -> u.getId())
-                            .collect(Collectors.toSet()));
-        	
-        }
-        
-        return prev;
-
-        
+        return StudentClassMapper.convertToStudentClassDTO(studentClassRepository.save(studentClass));
     }
 
     public List<UserDTO> getStudentsOfClass(UUID classId) throws StudentClassNotFoundException {
@@ -143,7 +91,7 @@ public class StudentClassService {
     public StudentClassDTO getStudentClassDetails(UUID classId) throws StudentClassNotFoundException {
         StudentClass studentClass = findById(classId);
 
-        return convertToStudentClassDTO(studentClass);
+        return StudentClassMapper.convertToStudentClassDTO(studentClass);
     }
 
     public void editStudentClass(UUID classId, UUID userId, StudentClassDTO studentClassDTO)
@@ -194,7 +142,7 @@ public class StudentClassService {
     	studentClass.addSuggestedBook(book);
     	studentClassRepository.save(studentClass);
     	
-    	return mapper.convertToBookDTO(book);
+    	return BookMapper.convertToBookDTO(book);
     	
     }
     
@@ -205,8 +153,6 @@ public class StudentClassService {
     }
     
     public Set<StudentClassDTO> getClasses(UUID userId) throws UserNotFoundException, NoClassesFoundException {
-    	
-    	if(!userService.existsById(userId)) throw new UserNotFoundException("Usuário não encontrado.");
     	
     	User user = userService.findUserById(userId);
     	
@@ -221,7 +167,7 @@ public class StudentClassService {
     		if(list.isEmpty()) throw new NoClassesFoundException("Você não é administrador de nenhuma turma.");
 
     		res = list.stream()
-    				.map(c -> convertToStudentClassDTO(c))
+    				.map(c -> StudentClassMapper.convertToStudentClassDTO(c))
     				.collect(Collectors.toSet());
     	}else if(user.getRole().equals("ALUNO")) {
     		
@@ -230,7 +176,7 @@ public class StudentClassService {
         	if(list.isEmpty()) throw new NoClassesFoundException("Você não faz parte de nenhuma turma.");
         	
         	res = list.stream()
-                    .map(c -> convertToStudentClassDTO(c))
+                    .map(c -> StudentClassMapper.convertToStudentClassDTO(c))
                     .collect(Collectors.toSet());
     	}else {
     		list = null;
@@ -248,6 +194,18 @@ public class StudentClassService {
     	
     	if(!studentClass.addMember(user)) throw new UserAlreadyAMemberOfClassException("Você já faz parte desta turma.");
     	
+    	studentClassRepository.save(studentClass);
+    	
+    }
+    
+    public void leaveClass(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException, UserNotAMemberOfClassException {
+    
+    	User user = userService.findUserById(userId);
+
+    	StudentClass studentClass = this.findById(classId);
+
+    	if(!studentClass.removeMember(user)) throw new UserNotAMemberOfClassException("Você não faz parte desta turma.");
+
     	studentClassRepository.save(studentClass);
     	
     }

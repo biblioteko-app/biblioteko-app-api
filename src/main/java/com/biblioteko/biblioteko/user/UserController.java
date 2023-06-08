@@ -28,6 +28,8 @@ import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
+import com.biblioteko.biblioteko.exception.UserAlreadyLoggedInException;
+import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.response.MessageResponse;
 import com.biblioteko.biblioteko.response.UserInfoResponse;
@@ -73,12 +75,10 @@ public class UserController {
 	  try {
 		  UserDTO userDTO = userService.createUser(newUserDTO);
 	      return new ResponseEntity<>(userDTO, HttpStatus.CREATED);
-	  }catch(IllegalArgumentException e) {
-		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-	  }catch(EmailAlreadyExistsException e) {
+	  }catch(EmailAlreadyExistsException | IllegalArgumentException | UserAlreadyLoggedInException e) {
 		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 	  }catch(Exception e) {
-		  return new ResponseEntity<String>("Erro ao criar usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
+		  return new ResponseEntity<String>("Erro ao criar usuario: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	  }
    }
    
@@ -212,7 +212,23 @@ public class UserController {
 		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
 
-   } 
+   }
+   
+   @PostMapping("/{user_id}/leaveclass")
+   @PreAuthorize("@authUserService.checkId(#userId)")
+   public ResponseEntity<?> leaveClass(@PathVariable("user_id") UUID userId, @RequestParam("classId") UUID classId){
+	   try {
+		   studentClassService.leaveClass(userId, classId);
+		   return new ResponseEntity<>("Você não mais faz parte da turma.", HttpStatus.OK);
+	   }catch(UserNotFoundException | StudentClassNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+	   }catch(UserNotAMemberOfClassException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }
+
+   }
 
    @GetMapping("/{user_id}/favorite-books")
    public ResponseEntity<?> getFavoriteBooks(@PathVariable("user_id") UUID userId){

@@ -3,14 +3,16 @@ package com.biblioteko.biblioteko.security.services;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.biblioteko.biblioteko.exception.UnauthenticatedUserException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserRepository;
-import com.biblioteko.biblioteko.user.UserService;
 import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
@@ -19,16 +21,15 @@ public class AuthUserService {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired
-	private UserService userService;
-	
 	public boolean checkId(UUID id) {
 		String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 		User user = userRepository.findByEmail(username).get();
 		return user.getId().equals(id);
 	}
 	
-	public UserDTO getCurrentUser() {
+	public UserDTO getCurrentUser() throws UnauthenticatedUserException {
+		
+		if(!isAuthenticated()) throw new UnauthenticatedUserException("Usuário não autenticado.");
 		
 		UserDetails currDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User user = userRepository.findByEmail(currDetails.getUsername()).get();
@@ -36,8 +37,17 @@ public class AuthUserService {
 		
 	}
 	
+	public boolean isAuthenticated() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return !(authentication instanceof AnonymousAuthenticationToken);
+	}
+	
 	public boolean isProf() {
-		return getCurrentUser().getRole().equals("PROFESSOR");
+		try {
+			return getCurrentUser().getRole().equals("PROFESSOR");
+		}catch(UnauthenticatedUserException e) {
+			return false;
+		}
 	}
 
 }
