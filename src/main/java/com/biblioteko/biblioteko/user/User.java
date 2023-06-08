@@ -2,6 +2,8 @@ package com.biblioteko.biblioteko.user;
 
 import java.util.Set;
 import java.util.UUID;
+
+import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.read.Read;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,6 +53,12 @@ public class User {
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> securityRoles = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "user_starred_books",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id"))
+    private Set<Book> starredBooks = new HashSet<>();
     
     public User(String name, String email, String password, String role) {
     	this.name = name;
@@ -63,6 +71,10 @@ public class User {
         if(!readingList.contains(read)){
             readingList.add(read);
         }
+    }
+
+    public void addFavoriteBook(Book book) {
+        this.starredBooks.add(book);
     }
 }
 

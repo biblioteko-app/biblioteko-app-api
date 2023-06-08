@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.biblioteko.biblioteko.exception.BookAlreadyFavoritedException;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
@@ -95,13 +96,31 @@ public class BookController {
         }
     }
 
-    @GetMapping("/{user_id}")
-    public ResponseEntity<?> getAllBooks() {
+    @GetMapping("/books/{user_id}")
+    public ResponseEntity<?> getAllBooks(@PathVariable("user_id") UUID userId) {
         try {
-            List<BookDTO> booksListDTO = bookService.getAllBooks();
+            List<BookDTO> booksListDTO = bookService.getAllBooks(userId);
             return new ResponseEntity<>(booksListDTO, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch(UserNotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch (Exception e) {
             return new ResponseEntity<>("Erro ao obter livros.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{user_id}/{book_id}/favorite")
+    public ResponseEntity<?> starredBook(@PathVariable("user_id") UUID userId, @PathVariable("book_id") UUID bookId){
+        try{
+            bookService.starredBook(userId, bookId);
+            return new ResponseEntity<>("Livro favoritado", HttpStatus.OK);
+         }catch(UserNotFoundException e ){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+         }catch(BookNotFoundException e ){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch(BookAlreadyFavoritedException e){
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception e) {
+            return new ResponseEntity<>("Erro ao favoritar o livro.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

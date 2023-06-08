@@ -8,6 +8,7 @@ import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.BookMapper;
 import com.biblioteko.biblioteko.book.BookService;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.ReadNotFoundException;
@@ -55,7 +56,7 @@ public class ReadService {
     public Set<BookDTO> getBooksToReadingList(UUID userId) throws UserNotFoundException, BookNotFoundException{
         User user = userService.findUserById(userId);
     
-        return user.getReadingList().stream().map(r -> bookService.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
+        return user.getReadingList().stream().map(r -> BookMapper.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
     }
     
     public ReadDTO alterProgress(UUID userId, UUID readId, Integer readPages) throws UserNotFoundException, UserUnauthorizedException,
@@ -73,6 +74,6 @@ public class ReadService {
     	read.setReadPages(readPages);
     	readRepository.save(read);
     	return convertReadToDto(read);
-    	
     }
+
 }

@@ -55,21 +55,31 @@ public class Book {
     @Column(nullable = false)
     private String accessLink;
 
+    @Column(nullable = false)
+    private Integer numReview;
+
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    public Book(String title, String author, String genre, Integer edition, String synopsis, Float rating, String photo, Integer pages, String accessLink, User owner) {
+    public Book(String title, String author, String genre, Integer edition, String synopsis, String photo, Integer pages, String accessLink, User owner) {
         this.title = title;
         this.author = author;
         this.genre = genre;
         this.edition = edition;
         this.synopsis = synopsis;
-        this.rating = rating;
+        this.rating = (float) 0;
         this.photo = photo;
         this.pages = pages;
         this.accessLink = accessLink;
         this.owner = owner;
+        this.numReview = 0;
+    }
+
+    public void updateRating(Float newReview) {
+        Float newRating = ((rating + newReview) / (numReview + 1));
+        rating = newRating;
+        numReview++;
     }
 
 }

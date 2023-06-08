@@ -5,14 +5,17 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.hibernate.sql.ast.tree.expression.Star;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.biblioteko.biblioteko.exception.BookAlreadyFavoritedException;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.BookMapper;
 
 @Service
 public class BookService {
@@ -35,10 +38,10 @@ public class BookService {
             }
 
             Book book = new Book(newBookDTO.getTitle(), newBookDTO.getAuthor(), newBookDTO.getGender(), 
-                                edition, newBookDTO.getSynopsis(), newBookDTO.getRating(), 
+                                edition, newBookDTO.getSynopsis(), 
                                 newBookDTO.getPhoto(), newBookDTO.getPages(), newBookDTO.getAccessLink(), user);
 
-            return convertToBookDTO(bookRepository.save(book));
+            return BookMapper.convertToBookDTO(bookRepository.save(book));
         }else{
             throw new UserUnauthorizedException("Usuario sem permissão!");
         }
@@ -52,12 +55,6 @@ public class BookService {
         return book.get();
     }
 
-    public BookDTO convertToBookDTO(Book book){
-        return new BookDTO(book.getId(), book.getTitle(), book.getAuthor(), book.getGenre(),
-                           book.getEdition(), book.getSynopsis(), book.getRating(), book.getPhoto(), 
-                           book.getPages(), book.getAccessLink());
-
-    }
 
     public BookDTO editBook(NewBookDTO newBookDTO, UUID userId, UUID bookId) throws UserNotFoundException, UserUnauthorizedException, BookNotFoundException{
         User user = userService.findUserById(userId);
@@ -78,12 +75,11 @@ public class BookService {
             book.setEdition(edition);
             book.setGenre(newBookDTO.getGender());
             book.setSynopsis(newBookDTO.getSynopsis());
-            book.setRating(newBookDTO.getRating());
             book.setPhoto(newBookDTO.getPhoto());
             book.setPages(newBookDTO.getPages());
             book.setAccessLink(newBookDTO.getAccessLink());
             
-            return convertToBookDTO(bookRepository.save(book));
+            return BookMapper.convertToBookDTO(bookRepository.save(book));
         }else{
             throw new UserUnauthorizedException("Usuario sem permissão!");
         }
@@ -92,7 +88,7 @@ public class BookService {
     public BookDTO getBookDetails(UUID bookId) throws BookNotFoundException {
         Book book = findBookById(bookId);
 
-        return convertToBookDTO(book);
+        return BookMapper.convertToBookDTO(book);
     }
 
     public void removeBook(UUID bookId, UUID userId) throws BookNotFoundException, UserNotFoundException, UserUnauthorizedException {
@@ -116,8 +112,28 @@ public class BookService {
     	
     }
 
-    public List<BookDTO> getAllBooks() {
-        return  bookRepository.findAll().stream().map(b -> convertToBookDTO(b)).collect(Collectors.toList());
+    public List<BookDTO> getAllBooks(UUID userId) throws UserNotFoundException {
+        userService.findUserById(userId);
+        return  bookRepository.findAll().stream().map(b -> BookMapper.convertToBookDTO(b)).collect(Collectors.toList());
     }
+
+    public void updateRatingBook(Book book, Float stars){
+        book.updateRating(stars);
+        bookRepository.save(book);
+
+    }
+
+    public void starredBook(UUID userId, UUID bookId) throws UserNotFoundException, BookNotFoundException, BookAlreadyFavoritedException {
+        User user = userService.findUserById(userId);
+        Book book = findBookById(bookId);
+
+        if (user.getStarredBooks().contains(book)) {
+            throw new BookAlreadyFavoritedException("Livro já está na lista de favoritos");
+        }
+
+        userService.addBookToStarredList(user, book);
+        
+    }
+
   
 }

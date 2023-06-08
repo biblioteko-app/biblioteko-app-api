@@ -1,11 +1,8 @@
 package com.biblioteko.biblioteko.user;
 import java.util.UUID;
 
-import java.net.URI;
-
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
@@ -183,6 +180,7 @@ public class UserController {
 		   return new ResponseEntity<>("Nao foi possivel remover o usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   
    }
+
    }
    
    @GetMapping("/{user_id}/classes")
@@ -213,6 +211,22 @@ public class UserController {
 	   }catch(Exception e) {
 		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
+
+   } 
+
+   @GetMapping("/{user_id}/favorite-books")
+   public ResponseEntity<?> getFavoriteBooks(@PathVariable("user_id") UUID userId){
+	   try {
+		   Set<BookDTO> starredBooks = userService.getFavoriteBooks(userId);
+
+		   return new ResponseEntity<>(starredBooks, HttpStatus.OK);
+		   
+	   }catch(UserNotFoundException e) {
+		   return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		   
+	   }catch(Exception e) {
+		   return new ResponseEntity<>("Nao foi possivel pegar os livros favoritados.", HttpStatus.INTERNAL_SERVER_ERROR);
+	   }  
    }
    
 }

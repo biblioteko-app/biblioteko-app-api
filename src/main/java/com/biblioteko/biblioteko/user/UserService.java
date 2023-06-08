@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.biblioteko.biblioteko.book.Book;
+import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.read.Read;
@@ -15,9 +18,8 @@ import com.biblioteko.biblioteko.read.Read;
 import com.biblioteko.biblioteko.roles.Role;
 import com.biblioteko.biblioteko.roles.RoleEnum;
 import com.biblioteko.biblioteko.roles.RoleRepository;
-
-import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
-import com.biblioteko.biblioteko.exception.UserNotFoundException;
+import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.UserMapper;
 
 
 @Service
@@ -31,6 +33,8 @@ public class UserService {
     
     @Autowired
     PasswordEncoder encoder;
+    
+    private UserMapper userMapper = new UserMapper();
 
     public UserDTO createUser(NewUserDTO newUserDTO) throws IllegalArgumentException, EmailAlreadyExistsException {
     	
@@ -55,12 +59,12 @@ public class UserService {
         
         user.setSecurityRoles(securityRoles);
         
-        return convertToUserDTO(userRepository.save(user));
+        return UserMapper.convertToUserDTO(userRepository.save(user));
     }
     
     public UserDTO getUserDetails(UUID userId) throws UserNotFoundException {
         User user = findUserById(userId);
-    	return convertToUserDTO(user);
+    	return UserMapper.convertToUserDTO(user);
     }
     
     public void editUserDetails(UUID userId, UserDTO newUserDTO) throws UserNotFoundException, IllegalArgumentException, EmailAlreadyExistsException {
@@ -102,12 +106,6 @@ public class UserService {
     	userRepository.delete(user);
     }
 
-    public UserDTO convertToUserDTO (User user){
-        if(user.getReadingList() == null){
-            return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole(), null);
-        }
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getRole(), getUserReadingBooks(user)); 
-    }
 
     public Set<UUID> getUserReadingBooks(User user){
        return user.getReadingList().stream().map(r -> r.getBook().getId()).collect(Collectors.toSet());
@@ -127,6 +125,17 @@ public class UserService {
     public void addRead(Read read, User user) {
         user.addRead(read);
         userRepository.save(user);
+    }
+
+    public void addBookToStarredList(User user, Book book) {
+        user.addFavoriteBook(book);
+        userRepository.save(user);
+    }
+
+    public Set<BookDTO> getFavoriteBooks(UUID userId) throws UserNotFoundException{
+        User user = findUserById(userId);
+        return user.getStarredBooks().stream().map(b -> BookMapper.convertToBookDTO(b)).collect(Collectors.toSet());
+
     }
 
 }

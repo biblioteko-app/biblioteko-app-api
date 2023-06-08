@@ -22,6 +22,8 @@ import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
 public class StudentClassService {
@@ -37,6 +39,8 @@ public class StudentClassService {
 
     @Autowired
     private UserService userService;
+    
+    private BookMapper mapper = new BookMapper();
 
     public StudentClassDTO createStudentClass(NewStudentClassDTO newStudentClassDTO, UUID userId)
             throws UserNotFoundException {
@@ -74,8 +78,11 @@ public class StudentClassService {
     			           owner.getEmail(),
     			           owner.getRole(),
     			           owner.getReadingList().stream()
-    			                                 .map(l -> l.getId())
-    			                                 .collect(Collectors.toSet())
+    			                                 .map(l -> mapper.convertToBookDTO(l.getBook()))
+    			                                 .collect(Collectors.toSet()),
+    			           owner.getStarredBooks().stream()
+    			                                  .map(b -> mapper.convertToBookDTO(b))
+    			                                  .collect(Collectors.toSet())
     			);
     	
     	StudentClassDTO prev = new StudentClassDTO(studentClass.getId(),
@@ -114,7 +121,7 @@ public class StudentClassService {
 
         List<UserDTO> studentsOfClass = studentClass.getStudents()
                 .stream()
-                .map(u -> userService.convertToUserDTO(u))
+                .map(u -> UserMapper.convertToUserDTO(u))
                 .collect(Collectors.toList());
         return studentsOfClass;
     }
@@ -187,7 +194,7 @@ public class StudentClassService {
     	studentClass.addSuggestedBook(book);
     	studentClassRepository.save(studentClass);
     	
-    	return bookService.convertToBookDTO(book);
+    	return mapper.convertToBookDTO(book);
     	
     }
     
