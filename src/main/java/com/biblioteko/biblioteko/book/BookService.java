@@ -1,6 +1,10 @@
 package com.biblioteko.biblioteko.book;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -110,6 +114,10 @@ public class BookService {
     	
     	return bookRepository.findById(bookId).get();
     	
+    }
+
+    public List<BookDTO> getAllBooks() {
+        return  bookRepository.findAll().stream().map(b -> convertToBookDTO(b)).collect(Collectors.toList());
     }
   
 }

@@ -1,4 +1,5 @@
 package com.biblioteko.biblioteko.book;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -85,6 +86,16 @@ public class BookController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("Erro ao remover o livro.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{user_id}")
+    public ResponseEntity<?> getAllBooks() {
+        try {
+            List<BookDTO> booksListDTO = bookService.getAllBooks();
+            return new ResponseEntity<>(booksListDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro ao obter livros.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
