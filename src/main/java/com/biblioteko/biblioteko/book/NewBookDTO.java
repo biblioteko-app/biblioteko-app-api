@@ -17,8 +17,6 @@ public class NewBookDTO {
 
     private String synopsis;
     
-    private Float rating;
-
     private String photo;
 
     private Integer pages;

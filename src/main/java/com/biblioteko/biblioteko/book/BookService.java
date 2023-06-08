@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import org.hibernate.sql.ast.tree.expression.Star;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,7 @@ public class BookService {
             }
 
             Book book = new Book(newBookDTO.getTitle(), newBookDTO.getAuthor(), newBookDTO.getGender(), 
-                                edition, newBookDTO.getSynopsis(), newBookDTO.getRating(), 
+                                edition, newBookDTO.getSynopsis(), 
                                 newBookDTO.getPhoto(), newBookDTO.getPages(), newBookDTO.getAccessLink(), user);
 
             return convertToBookDTO(bookRepository.save(book));
@@ -78,7 +79,6 @@ public class BookService {
             book.setEdition(edition);
             book.setGenre(newBookDTO.getGender());
             book.setSynopsis(newBookDTO.getSynopsis());
-            book.setRating(newBookDTO.getRating());
             book.setPhoto(newBookDTO.getPhoto());
             book.setPages(newBookDTO.getPages());
             book.setAccessLink(newBookDTO.getAccessLink());
@@ -116,8 +116,16 @@ public class BookService {
     	
     }
 
-    public List<BookDTO> getAllBooks() {
+    public List<BookDTO> getAllBooks(UUID userId) throws UserNotFoundException {
+        userService.findUserById(userId);
         return  bookRepository.findAll().stream().map(b -> convertToBookDTO(b)).collect(Collectors.toList());
     }
+
+    public void updateRatingBook(Book book, Float stars){
+        book.updateRating(stars);
+        bookRepository.save(book);
+
+    }
+
   
 }

@@ -89,12 +89,14 @@ public class BookController {
         }
     }
 
-    @GetMapping("/{user_id}")
-    public ResponseEntity<?> getAllBooks() {
+    @GetMapping("/books/{user_id}")
+    public ResponseEntity<?> getAllBooks(@PathVariable("user_id") UUID userId) {
         try {
-            List<BookDTO> booksListDTO = bookService.getAllBooks();
+            List<BookDTO> booksListDTO = bookService.getAllBooks(userId);
             return new ResponseEntity<>(booksListDTO, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch(UserNotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch (Exception e) {
             return new ResponseEntity<>("Erro ao obter livros.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

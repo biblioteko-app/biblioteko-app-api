@@ -37,10 +37,10 @@ public class Review {
     private Book book;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private User student;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
-    private String comment;
+    private Float stars;
 
 }
