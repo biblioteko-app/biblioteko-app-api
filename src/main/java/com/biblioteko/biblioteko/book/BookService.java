@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserService;
 
@@ -18,7 +18,7 @@ public class BookService {
     @Autowired
     private UserService userService;
 
-    public BookDTO createBook(NewBookDTO newBookDTO, UUID userId) throws UserNotFoundException, UserUnauthorized{
+    public BookDTO createBook(NewBookDTO newBookDTO, UUID userId) throws UserNotFoundException, UserUnauthorizedException{
         User user = userService.findUserById(userId);
 
         if(user.getRole().equals("PROFESSOR")){
@@ -36,7 +36,7 @@ public class BookService {
 
             return convertToBookDTO(bookRepository.save(book));
         }else{
-            throw new UserUnauthorized("Usuario sem permissão!");
+            throw new UserUnauthorizedException("Usuario sem permissão!");
         }
         
     }
@@ -49,13 +49,13 @@ public class BookService {
     }
 
     public BookDTO convertToBookDTO(Book book){
-        return new BookDTO(book.getId(), book.getTitle(), book.getAuthor(), book.getGender(),
+        return new BookDTO(book.getId(), book.getTitle(), book.getAuthor(), book.getGenre(),
                            book.getEdition(), book.getSynopsis(), book.getRating(), book.getPhoto(), 
                            book.getPages(), book.getAccessLink());
 
     }
 
-    public BookDTO editBook(NewBookDTO newBookDTO, UUID userId, UUID bookId) throws UserNotFoundException, UserUnauthorized, BookNotFoundException{
+    public BookDTO editBook(NewBookDTO newBookDTO, UUID userId, UUID bookId) throws UserNotFoundException, UserUnauthorizedException, BookNotFoundException{
         User user = userService.findUserById(userId);
         Book book = findBookById(bookId);
         
@@ -72,7 +72,7 @@ public class BookService {
             book.setTitle(newBookDTO.getTitle());
             book.setAuthor(newBookDTO.getAuthor());
             book.setEdition(edition);
-            book.setGender(newBookDTO.getGender());
+            book.setGenre(newBookDTO.getGender());
             book.setSynopsis(newBookDTO.getSynopsis());
             book.setRating(newBookDTO.getRating());
             book.setPhoto(newBookDTO.getPhoto());
@@ -81,7 +81,7 @@ public class BookService {
             
             return convertToBookDTO(bookRepository.save(book));
         }else{
-            throw new UserUnauthorized("Usuario sem permissão!");
+            throw new UserUnauthorizedException("Usuario sem permissão!");
         }
     }
 
@@ -91,7 +91,7 @@ public class BookService {
         return convertToBookDTO(book);
     }
 
-    public void removeBook(UUID bookId, UUID userId) throws BookNotFoundException, UserNotFoundException, UserUnauthorized{
+    public void removeBook(UUID bookId, UUID userId) throws BookNotFoundException, UserNotFoundException, UserUnauthorizedException{
         User user = userService.findUserById(userId);
         Book book = findBookById(bookId);
         
@@ -99,7 +99,7 @@ public class BookService {
             
            bookRepository.delete(book);
     }else{
-        throw new UserUnauthorized("Não possui autorização para realizar essa remoção!");
+        throw new UserUnauthorizedException("Não possui autorização para realizar essa remoção!");
 
     }
 }

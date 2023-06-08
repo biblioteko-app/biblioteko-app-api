@@ -1,5 +1,4 @@
 package com.biblioteko.biblioteko.user;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

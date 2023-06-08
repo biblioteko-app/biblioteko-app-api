@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
@@ -84,14 +84,14 @@ public class StudentClassService {
     }
 
     public void removeStudentClass(UUID classId, UUID userId)
-            throws StudentClassNotFoundException, UserUnauthorized, UserNotFoundException {
+            throws StudentClassNotFoundException, UserUnauthorizedException, UserNotFoundException {
       
         User user = userService.findUserById(userId);
 
         StudentClass studentClass = findStudentClassById(classId);
 
         if (!studentClass.getOwner().getId().equals(user.getId())) {
-            throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
+            throw new UserUnauthorizedException("Não possui autorização para realizar essa alteração!");
         }
 
         studentClassRepository.delete(studentClass);
@@ -104,14 +104,14 @@ public class StudentClassService {
     }
 
     public void editStudentClass(UUID classId, UUID userId, StudentClassDTO studentClassDTO)
-            throws StudentClassNotFoundException, UserNotFoundException, UserUnauthorized {
+            throws StudentClassNotFoundException, UserNotFoundException, UserUnauthorizedException {
         User user = userService.findUserById(userId);
 
         StudentClass studentClass = findStudentClassById(classId);
 
         if (!studentClass.getOwner().getId().equals(user.getId())) {
           
-            throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
+            throw new UserUnauthorizedException("Não possui autorização para realizar essa alteração!");
         }
 
         studentClass.setName(studentClassDTO.getName());

@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.user.UserDTO;
 
@@ -31,6 +32,7 @@ public class StudentClassController {
     private AuthUserService authUserService;
 
     @PostMapping("/{user_id}")
+    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
     public ResponseEntity<?> createStudentClass(@RequestBody NewStudentClassDTO newStudentClassDTO, @PathVariable("user_id") UUID userId) {
         try{   
             StudentClassDTO studentClassDTO = studentClassService.createStudentClass(newStudentClassDTO, userId);
@@ -63,13 +65,17 @@ public class StudentClassController {
     }
 
 
+   
     @DeleteMapping("/{user_id}/{class_id}")
+    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
     public ResponseEntity<?> removeStudentClass(@PathVariable("class_id") UUID classId, @PathVariable("user_id") UUID userId) {
         try {
             studentClassService.removeStudentClass(classId, userId);
             return new ResponseEntity<>("Turma removida com sucesso!", HttpStatus.OK);
         } catch (StudentClassNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch (UserUnauthorizedException e) {
+        	return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("Erro ao remover a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -88,13 +94,14 @@ public class StudentClassController {
     }
 
     @PutMapping("/{user_id}/{class_id}")
+    @PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
     public ResponseEntity<?> editClass(@PathVariable("class_id") UUID classId, @RequestBody StudentClassDTO studentClassDTO, @PathVariable("user_id") UUID userId) {
         try {
             studentClassService.editStudentClass(classId, userId, studentClassDTO);
             return new ResponseEntity<>("Turma atualizada com sucesso!", HttpStatus.OK);
         } catch (StudentClassNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }catch (UserUnauthorized e) {
+        }catch (UserUnauthorizedException e) {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("Erro ao editar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);

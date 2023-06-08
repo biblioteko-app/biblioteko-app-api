@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 
 import org.springframework.stereotype.Controller;
@@ -34,7 +34,7 @@ public class BookController {
             return new ResponseEntity<>(bookDTO.getId(), HttpStatus.CREATED);
         }catch(UserNotFoundException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }catch(UserUnauthorized e){
+        }catch(UserUnauthorizedException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
         catch(IllegalArgumentException e){
@@ -52,7 +52,7 @@ public class BookController {
             return new ResponseEntity<>(bookDTO.getId(), HttpStatus.CREATED);
         }catch(UserNotFoundException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }catch(UserUnauthorized e){
+        }catch(UserUnauthorizedException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
         catch(IllegalArgumentException e){
