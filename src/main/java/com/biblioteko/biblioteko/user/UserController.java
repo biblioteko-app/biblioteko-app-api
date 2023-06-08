@@ -61,13 +61,13 @@ public class UserController {
     private AuthUserService authUserService;
     
     @Autowired
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
     
     @Autowired
-    JwtUtils jwtUtils;
+    private JwtUtils jwtUtils;
     
     @Autowired
-    RoleRepository roleRepository;
+    private RoleRepository roleRepository;
 
    @PostMapping("/signup")
    public ResponseEntity<?> createUser(@Valid @RequestBody NewUserDTO newUserDTO) {
@@ -209,7 +209,7 @@ public class UserController {
 	   }catch(UserAlreadyAMemberOfClassException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
 	   }catch(Exception e) {
-		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
+		   return new ResponseEntity<>("Erro ao entrar na turma.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
 
    }
@@ -225,7 +225,7 @@ public class UserController {
 	   }catch(UserNotAMemberOfClassException e) {
 		   return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
 	   }catch(Exception e) {
-		   return new ResponseEntity<>("Erro ao listar turmas.", HttpStatus.INTERNAL_SERVER_ERROR);
+		   return new ResponseEntity<>("Erro ao deixar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
 	   }
 
    }

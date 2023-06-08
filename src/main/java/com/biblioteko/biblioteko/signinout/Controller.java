@@ -74,9 +74,19 @@ public class Controller {
 
 	@PostMapping("/signout")
 	public ResponseEntity<?> logoutUser() {
-		ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-				.body(new MessageResponse("Voce foi deslogado. Ate mais!"));
+		
+		ResponseEntity<?> resp;
+		
+		if(authUserService.isAuthenticated()) {
+			ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+			resp = ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+					.body(new MessageResponse("Voce foi deslogado. Ate mais!"));
+			
+		}else {
+			resp = new ResponseEntity<>("Você não está logado.", HttpStatus.BAD_REQUEST);
+		}
+		
+		return resp;
 	}
 	
 	@GetMapping("/isAuth")

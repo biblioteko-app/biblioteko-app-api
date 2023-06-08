@@ -22,9 +22,13 @@ public class AuthUserService {
 	private UserRepository userRepository;
 	
 	public boolean checkId(UUID id) {
-		String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-		User user = userRepository.findByEmail(username).get();
-		return user.getId().equals(id);
+		
+		try {
+			return getCurrentUser().getId().equals(id);
+		}catch(UnauthenticatedUserException e) {
+			return false;
+		}
+		
 	}
 	
 	public UserDTO getCurrentUser() throws UnauthenticatedUserException {
