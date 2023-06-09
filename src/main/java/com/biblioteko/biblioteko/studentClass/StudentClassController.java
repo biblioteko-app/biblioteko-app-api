@@ -16,10 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.NoBooksFoundException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
+import com.biblioteko.biblioteko.exception.NotASuggestedBookException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
@@ -146,5 +150,38 @@ public class StudentClassController {
     	
     }
     
+    @GetMapping("/{user_id}/{class_id}/books")
+    @PreAuthorize("@authUserService.checkId(#userId)")
+    public ResponseEntity<?> getSuggestedBooks(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId){
+    	
+    	try {
+    		Set<BookDTO> books = studentClassService.getSuggestedBooks(userId, classId);
+    		return new ResponseEntity<>(books, HttpStatus.OK);
+    	}catch(UserNotFoundException | StudentClassNotFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    	}catch(UserUnauthorizedException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    	}catch(NoBooksFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+    	}catch(Exception e) {
+    		return new ResponseEntity<>("Erro ao obter livros sugeridos à turma.", HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+    	
+    }
+    
+    @PostMapping("/{user_id}/{class_id}/unsuggestBook")
+    @PreAuthorize("@authUserService.checkId(#userId)")
+    public ResponseEntity<?> unsuggestBook(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId, @RequestParam("id") UUID bookId){
+    	try {
+    		studentClassService.unsuggestBook(userId, classId, bookId);
+    		return new ResponseEntity<>("Sugestão de livro removida.", HttpStatus.OK);
+    	}catch(UserNotFoundException | StudentClassNotFoundException | BookNotFoundException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    	}catch(UserUnauthorizedException | NotASuggestedBookException e) {
+    		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    	}catch(Exception e) {
+    		return new ResponseEntity<>("Erro ao desfazer sugestão de livro.", HttpStatus.INTERNAL_SERVER_ERROR);
+    	}
+    }
   
 }

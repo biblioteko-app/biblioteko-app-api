@@ -15,7 +15,9 @@ import com.biblioteko.biblioteko.book.BookRepository;
 import com.biblioteko.biblioteko.book.BookService;
 import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.NoBooksFoundException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
+import com.biblioteko.biblioteko.exception.NotASuggestedBookException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
@@ -38,7 +40,7 @@ public class StudentClassService {
     private StudentClassRepository studentClassRepository;
     
     @Autowired
-    private BookRepository bookRepository;
+    private BookService bookService;
 
     @Autowired
     private UserService userService;
@@ -69,6 +71,7 @@ public class StudentClassService {
     }
 
     public List<UserDTO> getStudentsOfClass(UUID classId) throws StudentClassNotFoundException {
+    	
         StudentClass studentClass = findById(classId);
 
         List<UserDTO> studentsOfClass = studentClass.getStudents()
@@ -138,8 +141,7 @@ public class StudentClassService {
     	
     	if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
     	
-    	if(!bookRepository.existsById(bookId)) throw new BookNotFoundException("Livro não encontrado!");
-    	Book book = bookRepository.findById(bookId).get();
+    	Book book = bookService.findById(bookId);
     	
     	if(studentClass.bookAlreadySuggested(book)) throw new BookAlreadySuggestedException("Este livro já foi sugerido a esta turma.");
     	
@@ -147,6 +149,45 @@ public class StudentClassService {
     	studentClassRepository.save(studentClass);
     	
     	return BookMapper.convertToBookDTO(book);
+    	
+    }
+    
+    public Set<BookDTO> getSuggestedBooks(UUID userId, UUID studentClassId) throws StudentClassNotFoundException,
+    UserUnauthorizedException, UserNotFoundException, NoBooksFoundException {
+    	
+    	User user = userService.findUserById(userId);
+
+    	if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada!");
+    	StudentClass studentClass = studentClassRepository.findById(studentClassId).get();
+
+    	//Visivel apenas para o professor administrador da turma ou para os estudantes que dela fazem parte
+    	if(!studentClass.getOwner().getId().equals(userId) && !studentClass.getStudents().contains(user)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
+    	
+    	Set<Book> suggestedBooks = studentClass.getSuggestedBooks();
+    	
+    	if(suggestedBooks.isEmpty()) throw new NoBooksFoundException("Não há livros sugeridos para esta turma.");
+    	
+    	return suggestedBooks.stream()
+    			             .map(b -> BookMapper.convertToBookDTO(b))
+    			             .collect(Collectors.toSet());
+    	
+    }
+    
+    public void unsuggestBook(UUID userId, UUID studentClassId, UUID bookId) throws UserNotFoundException, StudentClassNotFoundException,
+    UserUnauthorizedException, BookNotFoundException, NotASuggestedBookException {
+    	
+    	if(!userService.existsById(userId)) throw new UserNotFoundException("Usuário inexistente.");
+    	
+    	if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada!");
+    	StudentClass studentClass = studentClassRepository.findById(studentClassId).get();
+    	
+    	if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
+    	
+    	Book book = bookService.findBookById(bookId);
+    	
+    	if(!studentClass.removeSuggestedBook(book)) throw new NotASuggestedBookException("Este livro não faz parte dos livros da turma.");
+    	
+    	studentClassRepository.save(studentClass);
     	
     }
     
