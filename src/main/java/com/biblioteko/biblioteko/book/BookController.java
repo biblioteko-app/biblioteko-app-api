@@ -27,7 +27,8 @@ public class BookController {
     @Autowired 
     private BookService bookService;
     
-    @Autowired
+    @SuppressWarnings("unused")
+	@Autowired
     private AuthUserService authUserService;
 
 	@PostMapping("/{user_id}")

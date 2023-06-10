@@ -1,8 +1,6 @@
 package com.biblioteko.biblioteko.signinout;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Valid;
@@ -24,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.biblioteko.biblioteko.exception.UnauthenticatedUserException;
-import com.biblioteko.biblioteko.response.MessageResponse;
-import com.biblioteko.biblioteko.response.UserInfoResponse;
 import com.biblioteko.biblioteko.security.jwt.JwtUtils;
+import com.biblioteko.biblioteko.security.response.MessageResponse;
+import com.biblioteko.biblioteko.security.response.UserInfoResponse;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.security.services.UserDetailsImpl;
 import com.biblioteko.biblioteko.user.UserDTO;

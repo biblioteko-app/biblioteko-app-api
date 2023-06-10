@@ -2,10 +2,8 @@ package com.biblioteko.biblioteko.book;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.hibernate.sql.ast.tree.expression.Star;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +35,7 @@ public class BookService {
                 edition = 1;
             }
 
-            Book book = new Book(newBookDTO.getTitle(), newBookDTO.getAuthor(), newBookDTO.getGender(), 
+            Book book = new Book(newBookDTO.getTitle(), newBookDTO.getAuthor(), newBookDTO.getGenre(), 
                                 edition, newBookDTO.getSynopsis(), 
                                 newBookDTO.getPhoto(), newBookDTO.getPages(), newBookDTO.getAccessLink(), user);
 
@@ -73,7 +71,7 @@ public class BookService {
             book.setTitle(newBookDTO.getTitle());
             book.setAuthor(newBookDTO.getAuthor());
             book.setEdition(edition);
-            book.setGenre(newBookDTO.getGender());
+            book.setGenre(newBookDTO.getGenre());
             book.setSynopsis(newBookDTO.getSynopsis());
             book.setPhoto(newBookDTO.getPhoto());
             book.setPages(newBookDTO.getPages());

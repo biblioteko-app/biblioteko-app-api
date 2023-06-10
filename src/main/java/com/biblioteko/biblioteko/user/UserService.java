@@ -15,10 +15,9 @@ import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserAlreadyLoggedInException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.read.Read;
-
-import com.biblioteko.biblioteko.roles.Role;
-import com.biblioteko.biblioteko.roles.RoleEnum;
-import com.biblioteko.biblioteko.roles.RoleRepository;
+import com.biblioteko.biblioteko.security.roles.Role;
+import com.biblioteko.biblioteko.security.roles.RoleEnum;
+import com.biblioteko.biblioteko.security.roles.RoleRepository;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
 import com.biblioteko.biblioteko.utils.UserMapper;

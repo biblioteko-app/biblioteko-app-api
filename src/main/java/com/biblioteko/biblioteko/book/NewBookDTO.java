@@ -11,7 +11,7 @@ public class NewBookDTO {
 
     private String author;
 
-    private String gender;
+    private String genre;
     
     private Integer edition;
 

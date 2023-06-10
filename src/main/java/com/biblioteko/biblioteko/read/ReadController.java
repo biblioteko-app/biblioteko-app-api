@@ -23,57 +23,58 @@ import com.biblioteko.biblioteko.security.services.AuthUserService;
 @Controller
 @RequestMapping("/api/read")
 public class ReadController {
-    @Autowired
-    ReadService readService;
-    
-    @Autowired
-    private AuthUserService authUserService;
+	@Autowired
+	ReadService readService;
 
-   @PostMapping("/{user_id}/{book_id}")
-   @PreAuthorize("@authUserService.checkId(#userId)")
-   public ResponseEntity<?> addBookToReadingList(@RequestBody ReadPagesDTO readPagesDTO, @PathVariable("user_id") UUID userId, @PathVariable("book_id") UUID bookId) {
-	   try{   
-		   ReadDTO readDTO = readService.addBookToReadingList(readPagesDTO, userId, bookId);
-		   return new ResponseEntity<>(readDTO.getId(), HttpStatus.CREATED);
-	   }catch(IllegalArgumentException e) {
+	@SuppressWarnings("unused")
+	@Autowired
+	private AuthUserService authUserService;
+
+	@PostMapping("/{user_id}/{book_id}")
+	@PreAuthorize("@authUserService.checkId(#userId)")
+	public ResponseEntity<?> addBookToReadingList(@RequestBody ReadPagesDTO readPagesDTO, @PathVariable("user_id") UUID userId, @PathVariable("book_id") UUID bookId) {
+		try{   
+			ReadDTO readDTO = readService.addBookToReadingList(readPagesDTO, userId, bookId);
+			return new ResponseEntity<>(readDTO.getId(), HttpStatus.CREATED);
+		}catch(IllegalArgumentException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(UserNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}catch(BookNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}catch(Exception e){
-		   return new ResponseEntity<String>("Erro ao adicionar livro na lista de leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	   }
-  }
+			return new ResponseEntity<String>("Erro ao adicionar livro na lista de leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-  @GetMapping("/{user_id}")
-  @PreAuthorize("@authUserService.checkId(#userId)")
-   public ResponseEntity<?> getBooksToReadingList(@PathVariable("user_id") UUID userId) {
-	   try{   
-		   Set<BookDTO> booksDTO = readService.getBooksToReadingList(userId);
-		   return new ResponseEntity<>(booksDTO, HttpStatus.CREATED);
-	   }catch(IllegalArgumentException e) {
+	@GetMapping("/{user_id}")
+	@PreAuthorize("@authUserService.checkId(#userId)")
+	public ResponseEntity<?> getBooksToReadingList(@PathVariable("user_id") UUID userId) {
+		try{   
+			Set<BookDTO> booksDTO = readService.getBooksToReadingList(userId);
+			return new ResponseEntity<>(booksDTO, HttpStatus.CREATED);
+		}catch(IllegalArgumentException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(UserNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		}catch(Exception e){
-		   return new ResponseEntity<String>("Erro ao listar leituras." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	   }
-  }
-  
-  @PutMapping("/{user_id}/{read_id}")
-  @PreAuthorize("@authUserService.checkId(#userId)")
-  public ResponseEntity<?> alterReadProgress(@PathVariable("user_id") UUID userId, @PathVariable("read_id") UUID readId, @RequestBody Integer readPages){
-	  try {
-		  ReadDTO readDTO = readService.alterProgress(userId, readId, readPages);
-		  return new ResponseEntity<ReadDTO>(readDTO, HttpStatus.OK);
-	  }catch(UserNotFoundException | ReadNotFoundException e) {
-		  return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-	  }catch(UserUnauthorizedException | IllegalArgumentException | ReadCompletedException e) {
-		  return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-	  }catch(Exception e) {
-		  return new ResponseEntity<String>("Erro ao alterar progresso da leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	  }
-  }
-    
+			return new ResponseEntity<String>("Erro ao listar leituras." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PutMapping("/{user_id}/{read_id}")
+	@PreAuthorize("@authUserService.checkId(#userId)")
+	public ResponseEntity<?> alterReadProgress(@PathVariable("user_id") UUID userId, @PathVariable("read_id") UUID readId, @RequestBody Integer readPages){
+		try {
+			ReadDTO readDTO = readService.alterProgress(userId, readId, readPages);
+			return new ResponseEntity<ReadDTO>(readDTO, HttpStatus.OK);
+		}catch(UserNotFoundException | ReadNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}catch(UserUnauthorizedException | IllegalArgumentException | ReadCompletedException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}catch(Exception e) {
+			return new ResponseEntity<String>("Erro ao alterar progresso da leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 }

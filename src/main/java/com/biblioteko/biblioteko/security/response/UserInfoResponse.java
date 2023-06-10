@@ -1,4 +1,4 @@
-package com.biblioteko.biblioteko.response;
+package com.biblioteko.biblioteko.security.response;
 
 import java.util.List;
 import java.util.UUID;

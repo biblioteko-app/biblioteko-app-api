@@ -31,10 +31,10 @@ import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserAlreadyLoggedInException;
 import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.response.MessageResponse;
-import com.biblioteko.biblioteko.response.UserInfoResponse;
-import com.biblioteko.biblioteko.roles.RoleRepository;
 import com.biblioteko.biblioteko.security.jwt.JwtUtils;
+import com.biblioteko.biblioteko.security.response.MessageResponse;
+import com.biblioteko.biblioteko.security.response.UserInfoResponse;
+import com.biblioteko.biblioteko.security.roles.RoleRepository;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.security.services.UserDetailsImpl;
 import com.biblioteko.biblioteko.studentClass.StudentClassDTO;
@@ -57,7 +57,8 @@ public class UserController {
     @Autowired
     private StudentClassService studentClassService;
     
-    @Autowired
+    @SuppressWarnings("unused")
+	@Autowired
     private AuthUserService authUserService;
     
     @Autowired

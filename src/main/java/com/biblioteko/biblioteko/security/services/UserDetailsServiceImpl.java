@@ -12,18 +12,18 @@ import com.biblioteko.biblioteko.user.UserRepository;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-	
-  @Autowired
-  private UserRepository userRepository;
 
-  @Override
-  @Transactional
-  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
+	@Autowired
+	private UserRepository userRepository;
 
-    return UserDetailsImpl.build(user);
-  }
+	@Override
+	@Transactional
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
+
+		return UserDetailsImpl.build(user);
+	}
 
 }
 

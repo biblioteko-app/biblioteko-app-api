@@ -17,6 +17,7 @@ import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.NoBooksFoundException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
+import com.biblioteko.biblioteko.exception.NoStudentsInClassException;
 import com.biblioteko.biblioteko.exception.NotASuggestedBookException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
 import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
@@ -191,9 +192,14 @@ public class StudentClassService {
     	
     }
     
-    public ClassProgressDTO getClassProgress(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException{
+    public ClassProgressDTO getClassProgress(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException,
+     UserUnauthorizedException, NoStudentsInClassException{
+    	
         userService.findUserById(userId);
         StudentClass studentClass = findById(classId);
+        
+        if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não possui autorização.");
+        if(studentClass.getStudents().isEmpty()) throw new NoStudentsInClassException("Não há estudantes participando desta turma.");
 
         List<UserDTO> studentsDTO = getStudentsOfClass(classId);
 

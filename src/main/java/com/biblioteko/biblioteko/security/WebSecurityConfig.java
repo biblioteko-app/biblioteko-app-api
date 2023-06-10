@@ -25,60 +25,60 @@ org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 @Configuration
 @EnableMethodSecurity
 public class WebSecurityConfig {
-  
-  @Value("${spring.h2.console.path}")
-  private String h2ConsolePath;
-  
-  @Autowired
-  UserDetailsServiceImpl userDetailsService;
 
-  @Autowired
-  private AuthEntryPointJwt unauthorizedHandler;
+	@Value("${spring.h2.console.path}")
+	private String h2ConsolePath;
 
-  @Bean
-  public AuthTokenFilter authenticationJwtTokenFilter() {
-    return new AuthTokenFilter();
-  }
-  
-  @Bean
-  public DaoAuthenticationProvider authenticationProvider() {
-      DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-       
-      authProvider.setUserDetailsService(userDetailsService);
-      authProvider.setPasswordEncoder(passwordEncoder());
-   
-      return authProvider;
-  }
- 
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-    return authConfig.getAuthenticationManager();
-  }
+	@Autowired
+	UserDetailsServiceImpl userDetailsService;
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-  
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> 
-          auth.requestMatchers("/api/auth/**").permitAll()
-              .requestMatchers("/api/users/signup/**").permitAll()
-              .requestMatchers(toH2Console()).permitAll()
-              .anyRequest().authenticated()
-        );
-    
- // fix H2 database console: Refused to display ' in a frame because it set 'X-Frame-Options' to 'deny'
-    http.headers(headers -> headers.frameOptions(frameOption -> frameOption.sameOrigin()));
-    
-    http.authenticationProvider(authenticationProvider());
+	@Autowired
+	private AuthEntryPointJwt unauthorizedHandler;
 
-    http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-    
-    return http.build();
-  }
+	@Bean
+	public AuthTokenFilter authenticationJwtTokenFilter() {
+		return new AuthTokenFilter();
+	}
+
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+		authProvider.setUserDetailsService(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
+
+		return authProvider;
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable())
+		.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+		.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+		.authorizeHttpRequests(auth -> 
+		auth.requestMatchers("/api/auth/**").permitAll()
+		.requestMatchers("/api/users/signup/**").permitAll()
+		.requestMatchers(toH2Console()).permitAll()
+		.anyRequest().authenticated()
+				);
+
+		// fix H2 database console: Refused to display ' in a frame because it set 'X-Frame-Options' to 'deny'
+		http.headers(headers -> headers.frameOptions(frameOption -> frameOption.sameOrigin()));
+
+		http.authenticationProvider(authenticationProvider());
+
+		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
 }

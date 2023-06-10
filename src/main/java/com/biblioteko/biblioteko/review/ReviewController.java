@@ -11,11 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
-import com.biblioteko.biblioteko.user.User;
 
 
 @RestController
@@ -26,6 +24,7 @@ public class ReviewController {
     private ReviewService reviewService;
 
 	
+	@SuppressWarnings("unused")
 	@Autowired
     private AuthUserService authUserService;
 

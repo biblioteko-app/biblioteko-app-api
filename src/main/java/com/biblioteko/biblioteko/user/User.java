@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import com.biblioteko.biblioteko.book.Book;
 import com.biblioteko.biblioteko.read.Read;
+import com.biblioteko.biblioteko.security.roles.Role;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,7 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.HashSet;
-import com.biblioteko.biblioteko.roles.Role;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

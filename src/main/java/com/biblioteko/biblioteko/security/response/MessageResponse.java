@@ -1,4 +1,4 @@
-package com.biblioteko.biblioteko.response;
+package com.biblioteko.biblioteko.security.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
