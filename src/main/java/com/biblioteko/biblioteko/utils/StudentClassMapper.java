@@ -11,29 +11,7 @@ public class StudentClassMapper {
 
 	public static StudentClassDTO convertToStudentClassDTO(StudentClass studentClass) {
 
-		User owner = studentClass.getOwner();
-
-		UserDTO ownerDto = new UserDTO(
-				owner.getId(),
-				owner.getName(),
-				owner.getEmail(),
-				owner.getRole(),
-				owner.getReadingList().stream()
-				.map(l -> BookMapper.convertToBookDTO(l.getBook()))
-				.collect(Collectors.toSet()),
-				owner.getStarredBooks().stream()
-				.map(b -> BookMapper.convertToBookDTO(b))
-				.collect(Collectors.toSet())
-				);
-
-		StudentClassDTO prev = new StudentClassDTO(studentClass.getId(),
-				studentClass.getName(),
-				studentClass.getClassYear(),
-				studentClass.getSchoolSubject(),
-				studentClass.getPhoto(),
-				ownerDto,
-				null,
-				null);
+		StudentClassDTO prev = convertToBasicDTO(studentClass);
 
 		if (studentClass.getStudents() != null) {
 
@@ -55,6 +33,24 @@ public class StudentClassMapper {
 		return prev;
 
 
+	}
+	
+	public static StudentClassDTO convertToBasicDTO(StudentClass studentClass) {
+		
+		User owner = studentClass.getOwner();
+		
+		UserDTO ownerDto = UserMapper.convertToUserDTO(owner);
+
+		return new StudentClassDTO(
+				studentClass.getId(),
+				studentClass.getName(),
+				studentClass.getClassYear(),
+				studentClass.getSchoolSubject(),
+				studentClass.getPhoto(),
+				ownerDto,
+				null,
+				null);
+		
 	}
 
 }

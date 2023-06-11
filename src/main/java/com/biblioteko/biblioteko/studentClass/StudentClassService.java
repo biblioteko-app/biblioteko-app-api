@@ -71,9 +71,15 @@ public class StudentClassService {
         return StudentClassMapper.convertToStudentClassDTO(studentClassRepository.save(studentClass));
     }
 
-    public List<UserDTO> getStudentsOfClass(UUID classId) throws StudentClassNotFoundException {
+    public List<UserDTO> getStudentsOfClass(UUID userId, UUID classId) throws StudentClassNotFoundException, UserUnauthorizedException, UserNotFoundException {
+    	
+    	User queryAuthor = userService.findUserById(userId);
     	
         StudentClass studentClass = findById(classId);
+        
+        if(!studentClass.getStudents().contains(queryAuthor) && !studentClass.getOwner().getId().equals(queryAuthor.getId())) {
+        	throw new UserUnauthorizedException("Esta informação não está visível para você.");
+        }
 
         List<UserDTO> studentsOfClass = studentClass.getStudents()
                 .stream()
@@ -96,10 +102,21 @@ public class StudentClassService {
         studentClassRepository.delete(studentClass);
     }
 
-    public StudentClassDTO getStudentClassDetails(UUID classId) throws StudentClassNotFoundException {
+    public StudentClassDTO getStudentClassDetails(UUID queryAuthorId, UUID classId) throws StudentClassNotFoundException, UserNotFoundException {
+    	
+    	User queryAuthor = userService.findUserById(queryAuthorId);
+    	
         StudentClass studentClass = findById(classId);
+        
+        StudentClassDTO classDTO;
+        
+        if(!queryAuthor.getId().equals(studentClass.getOwner().getId()) && !studentClass.getStudents().contains(queryAuthor)) {
+        	classDTO = StudentClassMapper.convertToBasicDTO(studentClass);
+        }else {
+        	classDTO = StudentClassMapper.convertToStudentClassDTO(studentClass);
+        }
 
-        return StudentClassMapper.convertToStudentClassDTO(studentClass);
+        return classDTO;
     }
 
     public void editStudentClass(UUID classId, UUID userId, StudentClassDTO studentClassDTO)
@@ -201,7 +218,7 @@ public class StudentClassService {
         if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não possui autorização.");
         if(studentClass.getStudents().isEmpty()) throw new NoStudentsInClassException("Não há estudantes participando desta turma.");
 
-        List<UserDTO> studentsDTO = getStudentsOfClass(classId);
+        List<UserDTO> studentsDTO = getStudentsOfClass(userId, classId);
 
         List<User> students = new ArrayList<>();
 

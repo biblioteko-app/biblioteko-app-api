@@ -25,6 +25,7 @@ import com.biblioteko.biblioteko.exception.NoBooksFoundException;
 import com.biblioteko.biblioteko.exception.NoClassesFoundException;
 import com.biblioteko.biblioteko.exception.NotASuggestedBookException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
+import com.biblioteko.biblioteko.exception.UnauthenticatedUserException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
@@ -37,7 +38,6 @@ public class StudentClassController {
 	@Autowired
 	StudentClassService studentClassService;
 
-	@SuppressWarnings("unused")
 	@Autowired
 	private AuthUserService authUserService;
 
@@ -60,7 +60,8 @@ public class StudentClassController {
 	@GetMapping("/{class_id}/students")
 	public ResponseEntity<?> getStudentsOfClass(@PathVariable("class_id") UUID classId) {
 		try {
-			List<UserDTO> students = studentClassService.getStudentsOfClass(classId);
+			UUID userId = authUserService.getCurrentUser().getId();
+			List<UserDTO> students = studentClassService.getStudentsOfClass(userId, classId);
 
 			if(students.isEmpty()){
 				return new ResponseEntity<>("A turma não possui alunos matriculados!", HttpStatus.OK);
@@ -69,6 +70,8 @@ public class StudentClassController {
 			}
 		} catch (StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}catch (UnauthenticatedUserException | UserUnauthorizedException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao obter os alunos da turma.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -76,15 +79,16 @@ public class StudentClassController {
 
 
 
-	@DeleteMapping("/{user_id}/{class_id}")
-	@PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
-	public ResponseEntity<?> removeStudentClass(@PathVariable("class_id") UUID classId, @PathVariable("user_id") UUID userId) {
+	@DeleteMapping("/{class_id}")
+	@PreAuthorize("@authUserService.isProf()")
+	public ResponseEntity<?> removeStudentClass(@PathVariable("class_id") UUID classId) {
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			studentClassService.removeStudentClass(classId, userId);
 			return new ResponseEntity<>("Turma removida com sucesso!", HttpStatus.OK);
 		} catch (StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		}catch (UserUnauthorizedException e) {
+		}catch (UnauthenticatedUserException | UserUnauthorizedException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao remover a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -94,40 +98,46 @@ public class StudentClassController {
 	@GetMapping("/{class_id}")
 	public ResponseEntity<?> getStudentClassDetails(@PathVariable("class_id") UUID classId) {
 		try {
-			StudentClassDTO studentClassDTO = studentClassService.getStudentClassDetails(classId);
+			
+			UUID queryAuthorId = authUserService.getCurrentUser().getId();
+			StudentClassDTO studentClassDTO = studentClassService.getStudentClassDetails(queryAuthorId, classId);
 			return new ResponseEntity<>(studentClassDTO, HttpStatus.OK);
-		} catch (StudentClassNotFoundException e) {
+		} catch (UserNotFoundException | StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}catch (UnauthenticatedUserException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao obter detalhes da turma.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@PutMapping("/{user_id}/{class_id}")
-	@PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
-	public ResponseEntity<?> editClass(@PathVariable("class_id") UUID classId, @RequestBody StudentClassDTO studentClassDTO, @PathVariable("user_id") UUID userId) {
+	@PutMapping("/{class_id}")
+	@PreAuthorize("@authUserService.isProf()")
+	public ResponseEntity<?> editClass(@PathVariable("class_id") UUID classId, @RequestBody StudentClassDTO studentClassDTO) {
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			studentClassService.editStudentClass(classId, userId, studentClassDTO);
 			return new ResponseEntity<>("Turma atualizada com sucesso!", HttpStatus.OK);
 		} catch (StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		}catch (UserUnauthorizedException e) {
+		}catch (UnauthenticatedUserException | UserUnauthorizedException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Erro ao editar a turma.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@PutMapping("/{user_id}/{class_id}/{book_id}")
-	@PreAuthorize("@authUserService.checkId(#userId) and @authUserService.isProf()")
-	public ResponseEntity<?> suggestBook(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
+	@PutMapping("/{class_id}/{book_id}")
+	@PreAuthorize("and @authUserService.isProf()")
+	public ResponseEntity<?> suggestBook(@PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
 
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			studentClassService.suggestBook(userId, bookId, classId);
 			return new ResponseEntity<>("Livro sugerido com sucesso!", HttpStatus.OK);
 		}catch(UserNotFoundException | BookNotFoundException | StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		}catch(UserUnauthorizedException | BookAlreadySuggestedException e) {
+		}catch(UnauthenticatedUserException | UserUnauthorizedException | BookAlreadySuggestedException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(Exception e) {
 			return new ResponseEntity<>("Erro ao sugerir livro.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -136,11 +146,11 @@ public class StudentClassController {
 	}
 
 
-	@GetMapping("/{user_id}/{class_id}/progress")
-	@PreAuthorize("@authUserService.checkId(#userId)")
-	public ResponseEntity<?> getClassProgress(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId){
+	@GetMapping("/{class_id}/progress")
+	public ResponseEntity<?> getClassProgress(@PathVariable("class_id") UUID classId){
 
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			ClassProgressDTO classProgressDTO = studentClassService.getClassProgress(userId, classId);
 			return new ResponseEntity<>(classProgressDTO, HttpStatus.OK);
 		}catch(UserNotFoundException | StudentClassNotFoundException e) {
@@ -153,16 +163,16 @@ public class StudentClassController {
 
 	}
 
-	@GetMapping("/{user_id}/{class_id}/books")
-	@PreAuthorize("@authUserService.checkId(#userId)")
-	public ResponseEntity<?> getSuggestedBooks(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId){
+	@GetMapping("/{class_id}/books")
+	public ResponseEntity<?> getSuggestedBooks(@PathVariable("class_id") UUID classId){
 
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			Set<BookDTO> books = studentClassService.getSuggestedBooks(userId, classId);
 			return new ResponseEntity<>(books, HttpStatus.OK);
 		}catch(UserNotFoundException | StudentClassNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		}catch(UserUnauthorizedException e) {
+		}catch(UnauthenticatedUserException | UserUnauthorizedException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(NoBooksFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
@@ -172,15 +182,16 @@ public class StudentClassController {
 
 	}
 
-	@PostMapping("/{user_id}/{class_id}/unsuggestBook")
-	@PreAuthorize("@authUserService.checkId(#userId)")
-	public ResponseEntity<?> unsuggestBook(@PathVariable("user_id") UUID userId, @PathVariable("class_id") UUID classId, @RequestParam("id") UUID bookId){
+	@PostMapping("/{class_id}/unsuggestBook")
+	@PreAuthorize("@authUserService.isProf()")
+	public ResponseEntity<?> unsuggestBook(@PathVariable("class_id") UUID classId, @RequestParam("id") UUID bookId){
 		try {
+			UUID userId = authUserService.getCurrentUser().getId();
 			studentClassService.unsuggestBook(userId, classId, bookId);
 			return new ResponseEntity<>("Sugestão de livro removida.", HttpStatus.OK);
 		}catch(UserNotFoundException | StudentClassNotFoundException | BookNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-		}catch(UserUnauthorizedException | NotASuggestedBookException e) {
+		}catch(UnauthenticatedUserException | UserUnauthorizedException | NotASuggestedBookException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(Exception e) {
 			return new ResponseEntity<>("Erro ao desfazer sugestão de livro.", HttpStatus.INTERNAL_SERVER_ERROR);
