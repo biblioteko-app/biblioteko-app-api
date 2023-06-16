@@ -1,26 +1,47 @@
 package com.biblioteko.biblioteko.studentClass;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.biblioteko.biblioteko.book.Book;
+import com.biblioteko.biblioteko.book.BookDTO;
+import com.biblioteko.biblioteko.book.BookRepository;
+import com.biblioteko.biblioteko.book.BookService;
+import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
+import com.biblioteko.biblioteko.exception.BookNotFoundException;
+import com.biblioteko.biblioteko.exception.NoBooksFoundException;
+import com.biblioteko.biblioteko.exception.NoClassesFoundException;
+import com.biblioteko.biblioteko.exception.NoStudentsInClassException;
+import com.biblioteko.biblioteko.exception.NotASuggestedBookException;
 import com.biblioteko.biblioteko.exception.StudentClassNotFoundException;
+import com.biblioteko.biblioteko.exception.UserAlreadyAMemberOfClassException;
+import com.biblioteko.biblioteko.exception.UserNotAMemberOfClassException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
-import com.biblioteko.biblioteko.exception.UserUnauthorized;
+import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
+import com.biblioteko.biblioteko.read.Read;
+import com.biblioteko.biblioteko.read.ReadDTO;
 import com.biblioteko.biblioteko.user.User;
 import com.biblioteko.biblioteko.user.UserDTO;
 import com.biblioteko.biblioteko.user.UserService;
+import com.biblioteko.biblioteko.utils.BookMapper;
+import com.biblioteko.biblioteko.utils.ReadMapper;
+import com.biblioteko.biblioteko.utils.StudentClassMapper;
+import com.biblioteko.biblioteko.utils.UserMapper;
 
 @Service
 public class StudentClassService {
 
     @Autowired
     private StudentClassRepository studentClassRepository;
+    
+    @Autowired
+    private BookService bookService;
 
     @Autowired
     private UserService userService;
@@ -37,6 +58,7 @@ public class StudentClassService {
         }
 
         if (newStudentClassDTO.getSchoolSubject() == null || newStudentClassDTO.getSchoolSubject().isEmpty()) {
+          
             throw new IllegalArgumentException("Disciplina inválida.");
         }
 
@@ -46,70 +68,66 @@ public class StudentClassService {
         studentClass.setSchoolSubject(newStudentClassDTO.getSchoolSubject());
         studentClass.setPhoto(newStudentClassDTO.getPhoto());
         studentClass.setOwner(user);
-        return convertToStudentClassDTO(studentClassRepository.save(studentClass));
+        return StudentClassMapper.convertToStudentClassDTO(studentClassRepository.save(studentClass));
     }
 
-    public StudentClassDTO convertToStudentClassDTO(StudentClass studentClass) {
-        if (studentClass.getStudents() == null) {
-            return new StudentClassDTO(studentClass.getId(),
-                    studentClass.getName(),
-                    studentClass.getClassYear(),
-                    studentClass.getSchoolSubject(),
-                    studentClass.getPhoto(),
-                    studentClass.getOwner(),
-                    null);
-
-        } else {
-            return new StudentClassDTO(studentClass.getId(),
-                    studentClass.getName(),
-                    studentClass.getClassYear(),
-                    studentClass.getSchoolSubject(),
-                    studentClass.getPhoto(),
-                    studentClass.getOwner(),
-                    studentClass.getStudents()
-                            .stream()
-                            .map(u -> u.getId())
-                            .collect(Collectors.toSet()));
+    public List<UserDTO> getStudentsOfClass(UUID userId, UUID classId) throws StudentClassNotFoundException, UserUnauthorizedException, UserNotFoundException {
+    	
+    	User queryAuthor = userService.findUserById(userId);
+    	
+        StudentClass studentClass = findById(classId);
+        
+        if(!studentClass.getStudents().contains(queryAuthor) && !studentClass.getOwner().getId().equals(queryAuthor.getId())) {
+        	throw new UserUnauthorizedException("Esta informação não está visível para você.");
         }
-    }
-
-    public List<UserDTO> getStudentsOfClass(UUID classId) throws StudentClassNotFoundException {
-        StudentClass studentClass = findStudentClassById(classId);
 
         List<UserDTO> studentsOfClass = studentClass.getStudents()
                 .stream()
-                .map(u -> userService.convertToUserDTO(u))
+                .map(u -> UserMapper.convertToUserDTO(u))
                 .collect(Collectors.toList());
         return studentsOfClass;
     }
 
     public void removeStudentClass(UUID classId, UUID userId)
-            throws StudentClassNotFoundException, UserUnauthorized, UserNotFoundException {
+            throws StudentClassNotFoundException, UserUnauthorizedException, UserNotFoundException {
+      
         User user = userService.findUserById(userId);
 
-        StudentClass studentClass = findStudentClassById(classId);
+        StudentClass studentClass = findById(classId);
 
         if (!studentClass.getOwner().getId().equals(user.getId())) {
-            throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
+            throw new UserUnauthorizedException("Não possui autorização para realizar essa alteração!");
         }
 
         studentClassRepository.delete(studentClass);
     }
 
-    public StudentClassDTO getStudentClassDetails(UUID classId) throws StudentClassNotFoundException {
-        StudentClass studentClass = findStudentClassById(classId);
+    public StudentClassDTO getStudentClassDetails(UUID queryAuthorId, UUID classId) throws StudentClassNotFoundException, UserNotFoundException {
+    	
+    	User queryAuthor = userService.findUserById(queryAuthorId);
+    	
+        StudentClass studentClass = findById(classId);
+        
+        StudentClassDTO classDTO;
+        
+        if(!queryAuthor.getId().equals(studentClass.getOwner().getId()) && !studentClass.getStudents().contains(queryAuthor)) {
+        	classDTO = StudentClassMapper.convertToBasicDTO(studentClass);
+        }else {
+        	classDTO = StudentClassMapper.convertToStudentClassDTO(studentClass);
+        }
 
-        return convertToStudentClassDTO(studentClass);
+        return classDTO;
     }
 
     public void editStudentClass(UUID classId, UUID userId, StudentClassDTO studentClassDTO)
-            throws StudentClassNotFoundException, UserNotFoundException, UserUnauthorized {
+            throws StudentClassNotFoundException, UserNotFoundException, UserUnauthorizedException {
         User user = userService.findUserById(userId);
 
-        StudentClass studentClass = findStudentClassById(classId);
+        StudentClass studentClass = findById(classId);
 
         if (!studentClass.getOwner().getId().equals(user.getId())) {
-            throw new UserUnauthorized("Não possui autorização para realizar essa alteração!");
+          
+            throw new UserUnauthorizedException("Não possui autorização para realizar essa alteração!");
         }
 
         studentClass.setName(studentClassDTO.getName());
@@ -123,16 +141,167 @@ public class StudentClassService {
         studentClassRepository.save(studentClass);
     }
 
-    public StudentClass findStudentClassById(UUID studentClassId) throws StudentClassNotFoundException {
+    public StudentClass findById(UUID studentClassId) throws StudentClassNotFoundException {
         Optional<StudentClass> studentClass = this.studentClassRepository.findById(studentClassId);
         if (!studentClass.isPresent())
             throw new StudentClassNotFoundException("Turma não encontrada.");
-
+      
         return studentClass.get();
     }
-
-    public static StudentClass findById(Long studentId) {
-        return null;
+    
+    public BookDTO suggestBook(UUID userId, UUID bookId, UUID studentClassId) throws BookNotFoundException, StudentClassNotFoundException,
+    UserUnauthorizedException, BookAlreadySuggestedException, UserNotFoundException {
+    	
+    	userService.findUserById(userId);
+    	
+    	if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada!");
+    	StudentClass studentClass = studentClassRepository.findById(studentClassId).get();
+    	
+    	if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
+    	
+    	Book book = bookService.findById(bookId);
+    	
+    	if(studentClass.bookAlreadySuggested(book)) throw new BookAlreadySuggestedException("Este livro já foi sugerido a esta turma.");
+    	
+    	studentClass.addSuggestedBook(book);
+    	studentClassRepository.save(studentClass);
+    	
+    	return BookMapper.convertToBookDTO(book);
+    	
     }
+    
+    public Set<BookDTO> getSuggestedBooks(UUID userId, UUID studentClassId) throws StudentClassNotFoundException,
+    UserUnauthorizedException, UserNotFoundException, NoBooksFoundException {
+    	
+    	User user = userService.findUserById(userId);
+
+    	if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada!");
+    	StudentClass studentClass = studentClassRepository.findById(studentClassId).get();
+
+    	//Visivel apenas para o professor administrador da turma ou para os estudantes que dela fazem parte
+    	if(!studentClass.getOwner().getId().equals(userId) && !studentClass.getStudents().contains(user)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
+    	
+    	Set<Book> suggestedBooks = studentClass.getSuggestedBooks();
+    	
+    	if(suggestedBooks.isEmpty()) throw new NoBooksFoundException("Não há livros sugeridos para esta turma.");
+    	
+    	return suggestedBooks.stream()
+    			             .map(b -> BookMapper.convertToBookDTO(b))
+    			             .collect(Collectors.toSet());
+    	
+    }
+    
+    public void unsuggestBook(UUID userId, UUID studentClassId, UUID bookId) throws UserNotFoundException, StudentClassNotFoundException,
+    UserUnauthorizedException, BookNotFoundException, NotASuggestedBookException {
+    	
+    	if(!userService.existsById(userId)) throw new UserNotFoundException("Usuário inexistente.");
+    	
+    	if(!studentClassRepository.existsById(studentClassId)) throw new StudentClassNotFoundException("Turma não encontrada!");
+    	StudentClass studentClass = studentClassRepository.findById(studentClassId).get();
+    	
+    	if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não tem permissão para realizar esta ação.");
+    	
+    	Book book = bookService.findBookById(bookId);
+    	
+    	if(!studentClass.removeSuggestedBook(book)) throw new NotASuggestedBookException("Este livro não faz parte dos livros da turma.");
+    	
+    	studentClassRepository.save(studentClass);
+    	
+    }
+    
+    public ClassProgressDTO getClassProgress(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException,
+     UserUnauthorizedException, NoStudentsInClassException{
+    	
+        userService.findUserById(userId);
+        StudentClass studentClass = findById(classId);
+        
+        if(!studentClass.getOwner().getId().equals(userId)) throw new UserUnauthorizedException("Você não possui autorização.");
+        if(studentClass.getStudents().isEmpty()) throw new NoStudentsInClassException("Não há estudantes participando desta turma.");
+
+        List<UserDTO> studentsDTO = getStudentsOfClass(userId, classId);
+
+        List<User> students = new ArrayList<>();
+
+        for (UserDTO student : studentsDTO) {
+            students.add(userService.findUserById(student.getId()));
+        }
+        
+        List<ReadDTO> individualStudentProgressByBook = new ArrayList<>();
+
+        float sumProgressStudentsClass = 0;
+
+    	for (User student : students) {
+            for (Read read : student.getReadingList()) {
+                if (studentClass.getSuggestedBooks().contains(read.getBook())) {
+                    sumProgressStudentsClass += read.getProgress();
+                    individualStudentProgressByBook.add(ReadMapper.convertReadToDto(read));
+                }
+            }
+        }
+
+        Float overallClassProgress = sumProgressStudentsClass / students.size();
+        
+        return new ClassProgressDTO(overallClassProgress, individualStudentProgressByBook);
+    	
+    }
+    
+    public Set<StudentClassDTO> getClasses(UUID userId) throws UserNotFoundException, NoClassesFoundException {
+    	
+    	User user = userService.findUserById(userId);
+    	
+    	Set<StudentClass> list;
+    	
+    	Set<StudentClassDTO> res;
+    	
+    	if(user.getRole().equals("PROFESSOR")) {
+    	
+    		list = studentClassRepository.findByOwnerId(userId);
+
+    		if(list.isEmpty()) throw new NoClassesFoundException("Você não é administrador de nenhuma turma.");
+
+    		res = list.stream()
+    				.map(c -> StudentClassMapper.convertToStudentClassDTO(c))
+    				.collect(Collectors.toSet());
+    	}else if(user.getRole().equals("ALUNO")) {
+    		
+    		list = studentClassRepository.getClassesContainingUser(userId);
+        	
+        	if(list.isEmpty()) throw new NoClassesFoundException("Você não faz parte de nenhuma turma.");
+        	
+        	res = list.stream()
+                    .map(c -> StudentClassMapper.convertToStudentClassDTO(c))
+                    .collect(Collectors.toSet());
+    	}else {
+    		list = null;
+    		res = null;
+    	}
+    	
+    	return res;
+    }
+    
+    public void joinClass(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException, UserAlreadyAMemberOfClassException {
+    	
+    	User user = userService.findUserById(userId);
+    	
+    	StudentClass studentClass = this.findById(classId);
+    	
+    	if(!studentClass.addMember(user)) throw new UserAlreadyAMemberOfClassException("Você já faz parte desta turma.");
+    	
+    	studentClassRepository.save(studentClass);
+    	
+    }
+    
+    public void leaveClass(UUID userId, UUID classId) throws UserNotFoundException, StudentClassNotFoundException, UserNotAMemberOfClassException {
+    
+    	User user = userService.findUserById(userId);
+
+    	StudentClass studentClass = this.findById(classId);
+
+    	if(!studentClass.removeMember(user)) throw new UserNotAMemberOfClassException("Você não faz parte desta turma.");
+
+    	studentClassRepository.save(studentClass);
+    	
+    }
+    
 
 }

@@ -1,9 +1,9 @@
-package com.biblioteko.biblioteko.reviewClass;
+package com.biblioteko.biblioteko.review;
 
 import java.util.UUID;
 
 import com.biblioteko.biblioteko.book.Book;
-import com.biblioteko.biblioteko.studentClass.StudentClass;
+import com.biblioteko.biblioteko.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,33 +14,33 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "reviews")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Review {
+	
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", updatable = false, unique = true, nullable = false)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
     private Book book;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private StudentClass student;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
-    private String comment;
+    private Float stars;
 
-    public void setBook(Book book2) {
-    }
-
-    public void setStudent(StudentClass student2) {
-    }
-
-    public void setComment(String comment2) {
-    }
-
-    // Adicionar construtores
 }

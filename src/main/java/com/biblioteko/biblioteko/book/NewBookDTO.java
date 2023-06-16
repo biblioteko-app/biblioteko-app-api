@@ -11,14 +11,12 @@ public class NewBookDTO {
 
     private String author;
 
-    private String gender;
+    private String genre;
     
     private Integer edition;
 
     private String synopsis;
     
-    private Float rating;
-
     private String photo;
 
     private Integer pages;
