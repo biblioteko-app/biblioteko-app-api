@@ -121,7 +121,7 @@ public class StudentClassController {
 	}
 
 	@PutMapping("/{class_id}/{book_id}")
-	@PreAuthorize("and @authUserService.isProf()")
+	@PreAuthorize("@authUserService.isProf()")
 	public ResponseEntity<?> suggestBook(@PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
 
 		try {
