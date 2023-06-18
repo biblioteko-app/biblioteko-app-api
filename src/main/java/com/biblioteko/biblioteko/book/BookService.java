@@ -115,6 +115,13 @@ public class BookService {
         return  bookRepository.findAll().stream().map(b -> BookMapper.convertToBookDTO(b)).collect(Collectors.toList());
     }
 
+
+    public List<BookDTO> getAllMyBooks(UUID userId) throws UserNotFoundException {
+        userService.findUserById(userId);
+        return  bookRepository.findByOwnerId(userId).stream().map(b -> BookMapper.convertToBookDTO(b)).collect(Collectors.toList());
+    }
+    
+
     public void updateRatingBook(Book book, Float stars){
         book.updateRating(stars);
         bookRepository.save(book);
@@ -134,4 +141,16 @@ public class BookService {
     }
 
   
+    public void unstarredBook(UUID userId, UUID bookId) throws UserNotFoundException, BookNotFoundException, BookAlreadyFavoritedException {
+        User user = userService.findUserById(userId);
+        Book book = findBookById(bookId);
+
+        if (user.getStarredBooks().contains(book)) {
+            userService.removeBookFromStarredList(user, book);
+        } else {
+            throw new BookAlreadyFavoritedException("Livro já não está na lista de favoritos");
+        }
+
+        
+    }
 }

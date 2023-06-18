@@ -49,9 +49,9 @@ public class Controller {
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginDTO loginRequest) {
 		System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
 		
-		if(authUserService.isAuthenticated()) {
-			return new ResponseEntity<>("Você já está logado no sistema.", HttpStatus.BAD_REQUEST);
-		}
+		// if(authUserService.isAuthenticated()) {
+		// 	return new ResponseEntity<>("Você já está logado no sistema.", HttpStatus.BAD_REQUEST);
+		// }
 
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
@@ -68,17 +68,7 @@ public class Controller {
 
 		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(
 				new UserInfoResponse(userDetails.getId(), userDetails.getEmail(), roles, jwtCookie.toString())
-		);
-				// .body(new ArrayList() {
-				// 	this.add(
-				// 		new UserInfoResponse(
-				// 				userDetails.getId(),
-				// 				userDetails.getEmail(),
-				// 				roles)
-				// 		);
-				// 	this.add(jwtCookie.toString());
-				// });
-			
+		);	
 	}	
 
 	@PostMapping("/signout")

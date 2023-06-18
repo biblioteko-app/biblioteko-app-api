@@ -119,4 +119,34 @@ public class BookController {
         }
     }
 
+
+    @PutMapping("/{user_id}/{book_id}/unfavorite")
+    public ResponseEntity<?> unstarredBook(@PathVariable("user_id") UUID userId, @PathVariable("book_id") UUID bookId){
+        try{
+            bookService.unstarredBook(userId, bookId);
+            return new ResponseEntity<>("Livro favoritado", HttpStatus.OK);
+         }catch(UserNotFoundException e ){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+         }catch(BookNotFoundException e ){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch(BookAlreadyFavoritedException e){
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception e) {
+            return new ResponseEntity<>("Erro ao desfavoritar o livro.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/my-books/{user_id}")
+    public ResponseEntity<?> getAllMyBooks(@PathVariable("user_id") UUID userId) {
+        try {
+            List<BookDTO> booksListDTO = bookService.getAllMyBooks(userId);
+            return new ResponseEntity<>(booksListDTO, HttpStatus.OK);
+        } catch(UserNotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }catch (Exception e) {
+            return new ResponseEntity<>("Erro ao obter livros.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

@@ -78,5 +78,9 @@ public class User {
     public void addFavoriteBook(Book book) {
         this.starredBooks.add(book);
     }
+
+    public void removeFavoriteBook(Book book) {
+        this.starredBooks.remove(book);
+    }
 }
 

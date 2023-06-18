@@ -158,5 +158,10 @@ public class UserService {
         return finishedBooks;
     }
 
+    public void removeBookFromStarredList(User user, Book book) {
+        user.removeFavoriteBook(book);
+        userRepository.save(user);
+    }
+
 }
 
