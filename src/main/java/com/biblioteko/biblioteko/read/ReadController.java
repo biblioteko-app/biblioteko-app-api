@@ -72,4 +72,19 @@ public class ReadController {
 		}
 	}
 
+	@GetMapping("/{user_id}/list")
+	@PreAuthorize("@authUserService.checkId(#userId)")
+	public ResponseEntity<?> getReadingList(@PathVariable("user_id") UUID userId) {
+		try{
+			Set<ReadDTO> readDTO = readService.getReadingList(userId);
+			return new ResponseEntity<>(readDTO, HttpStatus.CREATED);
+		}catch(IllegalArgumentException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}catch(UserNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}catch(Exception e){
+			return new ResponseEntity<String>("Erro ao listar leituras." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 }

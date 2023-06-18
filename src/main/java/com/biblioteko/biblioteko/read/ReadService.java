@@ -56,6 +56,12 @@ public class ReadService {
     
         return user.getReadingList().stream().map(r -> BookMapper.convertToBookDTO(r.getBook())).collect(Collectors.toSet());
     }
+
+    public Set<ReadDTO> getReadingList(UUID userId) throws UserNotFoundException {
+        User user = userService.findUserById(userId);
+
+        return user.getReadingList().stream().map(r -> ReadMapper.convertReadToDto(r)).collect(Collectors.toSet());
+    }
     
     public ReadDTO alterProgress(UUID userId, UUID readId, Integer readPages) throws UserNotFoundException, UserUnauthorizedException,
     IllegalArgumentException, ReadNotFoundException, ReadCompletedException {
