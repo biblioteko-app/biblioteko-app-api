@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.biblioteko.biblioteko.security.jwt.AuthEntryPointJwt;
 import com.biblioteko.biblioteko.security.jwt.AuthTokenFilter;
@@ -21,6 +24,8 @@ import com.biblioteko.biblioteko.security.services.UserDetailsServiceImpl;
 
 import static //
 org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableMethodSecurity
@@ -62,12 +67,14 @@ public class WebSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
+		http.csrf(csrf -> csrf.disable()).cors().and()
 		.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 		.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 		.authorizeHttpRequests(auth -> 
 		auth.requestMatchers("/api/auth/**").permitAll()
 		.requestMatchers("/api/users/signup/**").permitAll()
+		.requestMatchers("/swagger-ui/**").permitAll()
+		.requestMatchers("/v3/**").permitAll()
 		.requestMatchers(toH2Console()).permitAll()
 		.anyRequest().authenticated()
 				);
@@ -81,4 +88,19 @@ public class WebSecurityConfig {
 
 		return http.build();
 	}
+
+	@Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        // configuration.setAllowedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Access-Control-Allow-Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "Origin", "Cache-Control", "Content-Type", "Authorization", "Set-Cookie"));
+		configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("DELETE", "GET", "POST", "PATCH", "PUT"));
+		configuration.setExposedHeaders(Arrays.asList("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

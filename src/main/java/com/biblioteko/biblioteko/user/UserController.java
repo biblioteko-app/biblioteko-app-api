@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
@@ -47,7 +48,7 @@ import jakarta.validation.constraints.Size;
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
 
-@Controller
+@RestController
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -119,7 +120,7 @@ public class UserController {
 		   return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
 				   .body(new UserInfoResponse(userId,
 						   userDTO.getEmail(),
-						   roles));
+						   roles, jwtCookie.toString()));
 		   
 	   }catch(IllegalArgumentException e) {
 		   

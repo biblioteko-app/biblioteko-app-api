@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.BookNotFoundException;
 import com.biblioteko.biblioteko.exception.ReadCompletedException;
@@ -20,7 +22,7 @@ import com.biblioteko.biblioteko.exception.UserNotFoundException;
 import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 
-@Controller
+@RestController
 @RequestMapping("/api/read")
 public class ReadController {
 	@Autowired
@@ -74,6 +76,22 @@ public class ReadController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}catch(Exception e) {
 			return new ResponseEntity<String>("Erro ao alterar progresso da leitura." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+
+	@GetMapping("/{user_id}/list")
+	@PreAuthorize("@authUserService.checkId(#userId)")
+	public ResponseEntity<?> getReadingList(@PathVariable("user_id") UUID userId) {
+		try{   
+			Set<ReadDTO> readDTO = readService.getReadingList(userId);
+			return new ResponseEntity<>(readDTO, HttpStatus.CREATED);
+		}catch(IllegalArgumentException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}catch(UserNotFoundException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}catch(Exception e){
+			return new ResponseEntity<String>("Erro ao listar leituras." + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

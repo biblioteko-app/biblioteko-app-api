@@ -1,5 +1,6 @@
 package com.biblioteko.biblioteko.signinout;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ public class Controller {
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserLoginDTO loginRequest) {
+		System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
 		
 		if(authUserService.isAuthenticated()) {
 			return new ResponseEntity<>("Você já está logado no sistema.", HttpStatus.BAD_REQUEST);
@@ -64,11 +66,20 @@ public class Controller {
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-				.body(new UserInfoResponse(userDetails.getId(),
-						userDetails.getEmail(),
-						roles));
-	}
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(
+				new UserInfoResponse(userDetails.getId(), userDetails.getEmail(), roles, jwtCookie.toString())
+		);
+				// .body(new ArrayList() {
+				// 	this.add(
+				// 		new UserInfoResponse(
+				// 				userDetails.getId(),
+				// 				userDetails.getEmail(),
+				// 				roles)
+				// 		);
+				// 	this.add(jwtCookie.toString());
+				// });
+			
+	}	
 
 	@PostMapping("/signout")
 	public ResponseEntity<?> logoutUser() {

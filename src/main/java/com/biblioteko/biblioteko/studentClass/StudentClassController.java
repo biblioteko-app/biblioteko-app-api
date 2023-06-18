@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.biblioteko.biblioteko.book.BookDTO;
 import com.biblioteko.biblioteko.exception.BookAlreadySuggestedException;
@@ -31,7 +32,7 @@ import com.biblioteko.biblioteko.exception.UserUnauthorizedException;
 import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.user.UserDTO;
 
-@Controller
+@RestController
 @RequestMapping("/api/studentclass")
 public class StudentClassController {
 
@@ -128,7 +129,7 @@ public class StudentClassController {
 	}
 
 	@PutMapping("/{class_id}/{book_id}")
-	@PreAuthorize("and @authUserService.isProf()")
+	@PreAuthorize("@authUserService.isProf()")
 	public ResponseEntity<?> suggestBook(@PathVariable("class_id") UUID classId, @PathVariable("book_id") UUID bookId){
 
 		try {

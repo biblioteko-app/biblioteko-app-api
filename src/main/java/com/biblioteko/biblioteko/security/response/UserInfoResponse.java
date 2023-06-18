@@ -17,5 +17,6 @@ public class UserInfoResponse {
 	
 	@Setter(AccessLevel.NONE)
 	private List<String> securityRoles;
+	private String jwtCookie;
 
 }
