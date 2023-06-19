@@ -1,3 +1,7 @@
+INSERT INTO roles(name) VALUES('ROLE_USER');
+INSERT INTO roles(name) VALUES('ROLE_MODERATOR');
+INSERT INTO roles(name) VALUES('ROLE_ADMIN');
+
 --usuarios
 INSERT INTO USERS(ID, EMAIL, NAME, PASSWORD, ROLE) VALUES ('c9bf1a69-062e-41de-8c35-21343d660fae', 'prof@gmail.com', 'Prof. Profeta', '$2a$10$1vfIh3eRrjtZL.8oensmkO6FBfUhVqJIkpDkMxCRdS1d3eHQzcGWO', 'PROFESSOR'); -- 123
 
