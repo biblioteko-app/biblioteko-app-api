@@ -77,6 +77,18 @@ public class UserServiceTests {
             oneOf(userRepository).findById(userDTO.getId()); will(returnValue(Optional.of(user)));
         }});
 
+        context.checking(new Expectations() {{
+            never(userRepository).existsByEmail(with(any(String.class)));
+        }});
+
+        // context.checking(new Expectations() {{
+        //     atLeast(1).of(userRepository).findById(with(any(UUID.class)));
+        // }});
+
+        context.checking(new Expectations() {{
+            allowing(userRepository).findById(with(any(UUID.class)));
+        }});
+
         user.setName(userDTO.getName());
 
         context.checking(new Expectations() {{
