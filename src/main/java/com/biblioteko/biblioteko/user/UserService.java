@@ -22,8 +22,11 @@ import com.biblioteko.biblioteko.security.services.AuthUserService;
 import com.biblioteko.biblioteko.utils.BookMapper;
 import com.biblioteko.biblioteko.utils.UserMapper;
 
+import lombok.AllArgsConstructor;
+
 
 @Service
+@AllArgsConstructor
 public class UserService {
 
     @Autowired
@@ -91,7 +94,7 @@ public class UserService {
         user.setName(name);
         user.setEmail(email);
         
-        userRepository.save(user);	
+        userRepository.save(user);
     }
     
     public void changePassword(UUID userId, String newPass) throws UserNotFoundException, IllegalArgumentException {
@@ -103,7 +106,6 @@ public class UserService {
     	user.setPassword(encoder.encode(newPass));
     	
     	userRepository.save(user);
-    	
     }
     
     public void deleteUser(UUID userId) throws UserNotFoundException {

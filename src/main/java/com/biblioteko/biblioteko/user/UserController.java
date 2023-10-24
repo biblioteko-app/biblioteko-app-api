@@ -36,6 +36,7 @@ import com.biblioteko.biblioteko.studentClass.StudentClassService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 
 import com.biblioteko.biblioteko.exception.EmailAlreadyExistsException;
 import com.biblioteko.biblioteko.exception.UserNotFoundException;
@@ -43,6 +44,7 @@ import com.biblioteko.biblioteko.exception.UserNotFoundException;
 
 @RestController
 @RequestMapping("/api/users")
+@AllArgsConstructor
 public class UserController {
 
     @Autowired
